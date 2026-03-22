@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hunter's System | Rank</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .page-header { padding: 48px 0 36px; border-bottom: 1px solid var(--border-dim); margin-bottom: 48px; }
+    .page-title { font-family:'Orbitron',sans-serif; font-size:clamp(24px,4vw,42px); font-weight:900; letter-spacing:2px; color:var(--text-primary); text-shadow:var(--glow-blue); }
+    .page-title span { color:var(--accent-blue); }
+    .page-sub { font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px; color:var(--text-dim); margin-top:8px; }
+
+    /* ── BIG RANK DISPLAY ── */
+    .rank-display {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 60px 40px; border: 1px solid; margin-bottom: 48px; position: relative;
+      overflow: hidden; text-align: center;
+    }
+    .rank-display::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, var(--rank-color-alpha, rgba(59,130,246,0.06)) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .rank-huge {
+      font-family:'Orbitron',sans-serif; font-size: clamp(80px,18vw,160px); font-weight:900;
+      line-height:1; color: var(--rank-color, var(--accent-blue));
+      filter: drop-shadow(0 0 30px var(--rank-color, var(--accent-blue)));
+      animation: rankGlow 3s ease-in-out infinite;
+    }
+    @keyframes rankGlow {
+      0%,100%{ filter:drop-shadow(0 0 30px var(--rank-color,var(--accent-blue))); }
+      50%    { filter:drop-shadow(0 0 60px var(--rank-color,var(--accent-blue))); }
+    }
+    .rank-name {
+      font-family:'Share Tech Mono',monospace; font-size:14px; letter-spacing:5px;
+      color: var(--rank-color, var(--accent-blue)); margin-top:8px; opacity:.8;
+    }
+    .rank-xp-total {
+      font-family:'Orbitron',sans-serif; font-size:28px; font-weight:700;
+      color:var(--text-primary); margin-top:16px;
+    }
+    .rank-xp-label {
+      font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:3px;
+      color:var(--text-dim);
+    }
+
+    /* ── PROGRESS TO NEXT RANK ── */
+    .next-rank-panel {
+      background:var(--bg-panel); border:1px solid var(--border-dim);
+      padding:28px 32px; margin-bottom:48px; position:relative;
+    }
+    .next-rank-panel::before {
+      content:'ADVANCEMENT'; position:absolute; top:-10px; left:20px;
+      font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:3px;
+      color:var(--accent-cyan); background:var(--bg-void); padding:0 10px;
+    }
+    .next-rank-bar { margin: 20px 0; }
+    .next-rank-bar .xp-track { height:16px; border-color:var(--border-glow); }
+    .next-rank-bar .xp-fill  { height:100%; transition:width 1.8s cubic-bezier(.4,0,.2,1); }
+    .next-rank-bar .xp-fill::after { display:none; }
+    .next-rank-labels {
+      display:flex; justify-content:space-between; align-items:center;
+      font-family:'Share Tech Mono',monospace; font-size:11px;
+      color:var(--text-dim); margin-top:8px; letter-spacing:1px;
+    }
+
+    /* ── RANK TABLE ── */
+    .rank-table { width:100%; border-collapse:collapse; margin-bottom:48px; }
+    .rank-table th, .rank-table td {
+      padding:14px 20px; text-align:left;
+      border-bottom:1px solid var(--border-dim);
+    }
+    .rank-table th {
+      font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px;
+      color:var(--text-dim); background:var(--bg-panel); text-transform:uppercase;
+    }
+    .rank-table td { font-size:15px; font-weight:600; color:var(--text-secondary); }
+    .rank-table tr.current-rank { background:rgba(59,130,246,0.06); }
+    .rank-table tr.current-rank td { color:var(--text-primary); }
+    .rank-table tr:hover td { color:var(--text-primary); background:rgba(255,255,255,0.02); }
+    .rank-table .rank-cell {
+      font-family:'Orbitron',sans-serif; font-size:18px; font-weight:900;
+    }
+    .current-marker {
+      font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px;
+      color:var(--accent-cyan); background:rgba(6,182,212,0.1);
+      border:1px solid rgba(6,182,212,0.3); padding:3px 10px;
+    }
+
+    /* ── XP BREAKDOWN ── */
+    .breakdown-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; margin-bottom:48px; }
+    .breakdown-card {
+      background:var(--bg-card); border:1px solid var(--border-dim);
+      padding:20px; position:relative; transition:border-color .3s;
+    }
+    .breakdown-card:hover { border-color:var(--border-glow); }
+    .breakdown-rank {
+      font-family:'Orbitron',sans-serif; font-size:13px; font-weight:700;
+      padding:3px 10px; border:1px solid; display:inline-block; margin-bottom:12px;
+    }
+    .breakdown-count { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--text-dim); letter-spacing:1px; margin-bottom:4px; }
+    .breakdown-xp { font-family:'Orbitron',sans-serif; font-size:22px; font-weight:700; color:var(--accent-cyan); }
+
+    /* ── XP VALUE REFERENCE ── */
+    .xp-ref-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:48px; }
+    .xp-ref-card {
+      background:var(--bg-panel); border:1px solid var(--border-dim);
+      padding:16px; text-align:center;
+    }
+    .xp-ref-rank { font-family:'Orbitron',sans-serif; font-size:20px; font-weight:900; margin-bottom:6px; }
+    .xp-ref-val  { font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:1px; color:var(--text-dim); }
+  </style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">⬡ HUNTER SYS</a>
+    <div class="nav-links">
+      <a href="index.html">HOME</a>
+      <a href="tracker.html">TRACKER</a>
+      <a href="rank.html" class="active">RANK</a>
+      <a href="troubleshooting.html">HELP</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">RANK <span>ASSESSMENT</span></h1>
+    <p class="page-sub">// HUNTER CLASSIFICATION SYSTEM — XP-BASED RANKING //</p>
+  </div>
+
+  <!-- BIG RANK DISPLAY -->
+  <div class="rank-display" id="rankDisplay">
+    <div class="rank-huge" id="rankHuge">?</div>
+    <div class="rank-name" id="rankName">UNRANKED</div>
+    <div style="width:1px;height:24px;background:var(--border-dim);margin:16px 0;"></div>
+    <div class="rank-xp-total" id="rankXPTotal">0 XP</div>
+    <div class="rank-xp-label">TOTAL EXPERIENCE POINTS</div>
+  </div>
+
+  <!-- PROGRESS TO NEXT RANK -->
+  <div class="next-rank-panel" id="nextRankPanel">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text-dim);">CURRENT RANK</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:var(--text-primary);" id="progressCurrentRank">—</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text-dim);">XP NEEDED</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--accent-cyan);" id="progressXPNeeded">—</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--text-dim);">NEXT RANK</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:var(--text-primary);" id="progressNextRank">—</div>
+      </div>
+    </div>
+    <div class="next-rank-bar">
+      <div class="xp-track"><div class="xp-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="next-rank-labels">
+        <span id="progressMin">0 XP</span>
+        <span id="progressPct">0%</span>
+        <span id="progressMax">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- XP BREAKDOWN BY RANK -->
+  <div class="section-header">
+    <div class="section-icon">📊</div>
+    <h2 class="section-title">XP <span>BREAKDOWN</span></h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="breakdown-grid" id="breakdownGrid"></div>
+
+  <!-- RANK TABLE -->
+  <div class="section-header">
+    <div class="section-icon">📋</div>
+    <h2 class="section-title">RANK <span>TABLE</span></h2>
+    <div class="section-line"></div>
+  </div>
+  <table class="rank-table" id="rankTable">
+    <thead>
+      <tr>
+        <th>RANK</th>
+        <th>XP REQUIRED</th>
+        <th>XP RANGE</th>
+        <th>STATUS</th>
+      </tr>
+    </thead>
+    <tbody id="rankTableBody"></tbody>
+  </table>
+
+  <!-- XP VALUE REFERENCE -->
+  <div class="section-header">
+    <div class="section-icon">💡</div>
+    <h2 class="section-title">ENTRY <span>XP VALUES</span></h2>
+    <div class="section-line"></div>
+  </div>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:20px;line-height:1.6;">
+    XP is awarded based on the rank of each lab or project entry. Completing an entry grants full XP; 
+    entries in progress grant 50%; locked entries grant 0 XP.
+  </p>
+  <div class="xp-ref-grid">
+    <div class="xp-ref-card">
+      <div class="xp-ref-rank color-e">E</div>
+      <div class="xp-ref-val">250 XP (complete)<br/>125 XP (progress)</div>
+    </div>
+    <div class="xp-ref-card">
+      <div class="xp-ref-rank color-d">D</div>
+      <div class="xp-ref-val">600 XP (complete)<br/>300 XP (progress)</div>
+    </div>
+    <div class="xp-ref-card">
+      <div class="xp-ref-rank color-c">C</div>
+      <div class="xp-ref-val">1,200 XP (complete)<br/>600 XP (progress)</div>
+    </div>
+    <div class="xp-ref-card">
+      <div class="xp-ref-rank color-b">B</div>
+      <div class="xp-ref-val">2,500 XP (complete)<br/>1,250 XP (progress)</div>
+    </div>
+    <div class="xp-ref-card">
+      <div class="xp-ref-rank color-a">A</div>
+      <div class="xp-ref-val">5,000 XP (complete)<br/>2,500 XP (progress)</div>
+    </div>
+    <div class="xp-ref-card">
+      <div class="xp-ref-rank color-s">S</div>
+      <div class="xp-ref-val">10,000 XP (complete)<br/>5,000 XP (progress)</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="container">
+    <p class="footer-text">[ HUNTER SYSTEM v1.0 ] — <span id="footerName">HUNTER</span> — ALL RIGHTS RESERVED</p>
+  </div>
+</footer>
+
+<script>
+// ── PARTICLES ──
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let W,H,parts=[];
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+function mkP(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2+.3,dx:(Math.random()-.5)*.25,dy:-Math.random()*.4-.08,alpha:Math.random()*.4+.1,color:Math.random()>.5?'59,130,246':'139,92,246'};}
+for(let i=0;i<80;i++)parts.push(mkP());
+(function draw(){ctx.clearRect(0,0,W,H);parts.forEach((p,i)=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(${p.color},${p.alpha})`;ctx.fill();p.x+=p.dx;p.y+=p.dy;if(p.y<-10)parts[i]={...mkP(),y:H+10};});requestAnimationFrame(draw);})();
+
+// ── RANK DATA ──
+const RANKS = [
+  { rank:'S', min:42000, max:Infinity,  color:'var(--accent-gold)',   label:'42,000+',     range:'42,000 – ∞' },
+  { rank:'A', min:30000, max:41999,     color:'var(--accent-orange)', label:'30,000',       range:'30,000 – 41,999' },
+  { rank:'B', min:18000, max:29999,     color:'var(--accent-purple)', label:'18,000',       range:'18,000 – 29,999' },
+  { rank:'C', min:8000,  max:17999,     color:'var(--accent-blue)',   label:'8,000',        range:'8,000 – 17,999' },
+  { rank:'D', min:2000,  max:7999,      color:'var(--accent-green)',  label:'2,000',        range:'2,000 – 7,999' },
+  { rank:'E', min:0,     max:1999,      color:'var(--text-secondary)','label':'0',          range:'0 – 1,999' },
+];
+
+const XP_BY_RANK = {E:250,D:600,C:1200,B:2500,A:5000,S:10000};
+const RANK_COLORS_RAW = {S:'245,158,11',A:'249,115,22',B:'139,92,246',C:'59,130,246',D:'34,197,94',E:'139,163,196'};
+
+function getEntries(){ try{return JSON.parse(localStorage.getItem('hunterEntries')||'[]');}catch(e){return[];} }
+function calcXP(e){ const b=XP_BY_RANK[e.rank]||0; if(e.status==='complete')return b; if(e.status==='progress')return Math.floor(b*.5); return 0; }
+function getRankInfo(xp){ return RANKS.find(r=>xp>=r.min)||RANKS[RANKS.length-1]; }
+
+function init(){
+  const entries = getEntries();
+  const totalXP = entries.reduce((s,e)=>s+calcXP(e),0);
+  const rankInfo = getRankInfo(totalXP);
+  const name = localStorage.getItem('hunterName')||'HUNTER';
+  document.getElementById('footerName').textContent = name;
+
+  // Big rank display
+  const rd = document.getElementById('rankDisplay');
+  rd.style.borderColor = `rgba(${RANK_COLORS_RAW[rankInfo.rank]},.4)`;
+  rd.style.setProperty('--rank-color', rankInfo.color);
+  rd.style.setProperty('--rank-color-alpha', `rgba(${RANK_COLORS_RAW[rankInfo.rank]},.08)`);
+  document.getElementById('rankHuge').textContent = rankInfo.rank;
+  document.getElementById('rankName').textContent = `${rankInfo.rank}-RANK HUNTER`;
+  document.getElementById('rankXPTotal').textContent = `${totalXP.toLocaleString()} XP`;
+
+  // Progress to next rank
+  const rankIdx = RANKS.findIndex(r=>r.rank===rankInfo.rank);
+  const nextRank = rankIdx>0 ? RANKS[rankIdx-1] : null;
+  document.getElementById('progressCurrentRank').textContent = rankInfo.rank+'-RANK';
+  document.getElementById('progressCurrentRank').style.color = rankInfo.color;
+
+  if(nextRank){
+    const xpInTier = totalXP - rankInfo.min;
+    const tierSize = nextRank.min - rankInfo.min;
+    const pct = Math.round((xpInTier/tierSize)*100);
+    const needed = nextRank.min - totalXP;
+    document.getElementById('progressNextRank').textContent = nextRank.rank+'-RANK';
+    document.getElementById('progressNextRank').style.color = nextRank.color;
+    document.getElementById('progressXPNeeded').textContent = `${needed.toLocaleString()} XP`;
+    document.getElementById('progressMin').textContent = rankInfo.min.toLocaleString()+' XP';
+    document.getElementById('progressMax').textContent = nextRank.min.toLocaleString()+' XP';
+    document.getElementById('progressPct').textContent = pct+'%';
+    const fill = document.getElementById('progressFill');
+    fill.style.background = `linear-gradient(90deg, ${rankInfo.color}, ${nextRank.color})`;
+    setTimeout(()=>{ fill.style.width = pct+'%'; }, 300);
+  } else {
+    // S-rank — maxed
+    document.getElementById('progressNextRank').textContent = 'MAXED';
+    document.getElementById('progressXPNeeded').textContent = '0 XP';
+    document.getElementById('progressMin').textContent = '42,000 XP';
+    document.getElementById('progressMax').textContent = '∞';
+    document.getElementById('progressPct').textContent = '100%';
+    const fill = document.getElementById('progressFill');
+    fill.style.background = `linear-gradient(90deg, var(--accent-gold), #fcd34d)`;
+    fill.style.boxShadow = '0 0 20px rgba(245,158,11,.8)';
+    setTimeout(()=>{ fill.style.width='100%'; }, 300);
+  }
+
+  // XP Breakdown by rank
+  const breakdownGrid = document.getElementById('breakdownGrid');
+  const ranks = ['S','A','B','C','D','E'];
+  breakdownGrid.innerHTML = ranks.map(r=>{
+    const rel = entries.filter(e=>e.rank===r);
+    const done = rel.filter(e=>e.status==='complete').length;
+    const prog = rel.filter(e=>e.status==='progress').length;
+    const xpTotal = rel.reduce((s,e)=>s+calcXP(e),0);
+    const colorClass = `rank-${r.toLowerCase()}`;
+    return `
+    <div class="breakdown-card">
+      <span class="breakdown-rank ${colorClass}">${r}-RANK</span>
+      <div class="breakdown-count">${rel.length} ENTRIES &nbsp;·&nbsp; ${done} COMPLETE &nbsp;·&nbsp; ${prog} IN PROG</div>
+      <div class="breakdown-xp">${xpTotal.toLocaleString()} <span style="font-size:13px;color:var(--text-dim);">XP</span></div>
+    </div>`;
+  }).join('');
+
+  // Rank table
+  const tbody = document.getElementById('rankTableBody');
+  tbody.innerHTML = RANKS.map(r=>{
+    const isCurrent = r.rank===rankInfo.rank;
+    const achieved = totalXP >= r.min;
+    const colorClass = `color-${r.rank.toLowerCase()}`;
+    return `
+    <tr class="${isCurrent?'current-rank':''}">
+      <td><span class="rank-cell ${colorClass}">${r.rank}</span></td>
+      <td>${r.label}</td>
+      <td>${r.range}</td>
+      <td>${isCurrent?'<span class="current-marker">◀ CURRENT RANK</span>':achieved?'<span style="color:var(--accent-green);font-family:Share Tech Mono,monospace;font-size:11px;">✓ ACHIEVED</span>':'<span style="color:var(--text-dim);font-family:Share Tech Mono,monospace;font-size:11px;">LOCKED</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+init();
+</script>
+</body>
+</html>

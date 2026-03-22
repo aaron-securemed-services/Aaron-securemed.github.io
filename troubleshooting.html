@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hunter's System | Help</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .page-header { padding: 48px 0 36px; border-bottom: 1px solid var(--border-dim); margin-bottom: 48px; }
+    .page-title { font-family:'Orbitron',sans-serif; font-size:clamp(24px,4vw,42px); font-weight:900; letter-spacing:2px; color:var(--text-primary); text-shadow:var(--glow-blue); }
+    .page-title span { color:var(--accent-blue); }
+    .page-sub { font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px; color:var(--text-dim); margin-top:8px; }
+
+    /* Search */
+    .search-bar {
+      display:flex; gap:12px; margin-bottom:40px;
+    }
+    .search-bar input {
+      flex:1; background:var(--bg-panel); border:1px solid var(--border-dim);
+      color:var(--text-primary); font-family:'Rajdhani',sans-serif; font-size:16px;
+      padding:12px 18px; outline:none; transition:border-color .25s;
+    }
+    .search-bar input:focus { border-color:var(--accent-blue); }
+    .search-bar input::placeholder { color:var(--text-dim); font-size:14px; }
+
+    /* Category nav */
+    .cat-nav { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:40px; }
+    .cat-btn {
+      font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px;
+      padding:7px 18px; border:1px solid var(--border-dim); color:var(--text-dim);
+      background:transparent; cursor:pointer; transition:all .2s; text-transform:uppercase;
+    }
+    .cat-btn:hover { color:var(--accent-cyan); border-color:rgba(6,182,212,.4); background:rgba(6,182,212,.06); }
+    .cat-btn.active { color:var(--accent-blue); border-color:rgba(59,130,246,.5); background:rgba(59,130,246,.08); }
+
+    /* Issue accordion */
+    .issues-section { margin-bottom:48px; }
+    .issue-card {
+      background:var(--bg-card); border:1px solid var(--border-dim);
+      margin-bottom:10px; transition:border-color .3s;
+    }
+    .issue-card.hidden { display:none; }
+    .issue-card:hover { border-color:var(--border-glow); }
+    .issue-header {
+      display:flex; align-items:center; gap:16px; padding:18px 24px;
+      cursor:pointer; user-select:none;
+    }
+    .issue-icon { font-size:16px; flex-shrink:0; }
+    .issue-title { flex:1; font-family:'Rajdhani',sans-serif; font-size:16px; font-weight:700; color:var(--text-primary); }
+    .issue-cat {
+      font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px;
+      color:var(--text-dim); flex-shrink:0; display:none;
+    }
+    .issue-arrow { font-size:12px; color:var(--text-dim); transition:transform .3s; flex-shrink:0; }
+    .issue-card.open .issue-arrow { transform:rotate(180deg); }
+    .issue-body {
+      padding:0 24px; max-height:0; overflow:hidden;
+      transition:max-height .4s ease, padding .3s;
+    }
+    .issue-card.open .issue-body { max-height:1000px; padding:0 24px 24px; }
+    .issue-body p { font-size:14px; line-height:1.7; color:var(--text-secondary); margin-bottom:14px; }
+    .issue-body p:last-child { margin-bottom:0; }
+    .issue-body strong { color:var(--text-primary); font-weight:600; }
+    .code-block {
+      font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:.5px;
+      background:rgba(255,255,255,0.04); border:1px solid var(--border-dim);
+      padding:14px 18px; margin:10px 0; color:var(--accent-cyan); line-height:1.8;
+      overflow-x:auto; white-space:pre;
+    }
+    .solution-step {
+      display:flex; gap:12px; margin-bottom:10px;
+    }
+    .step-num {
+      font-family:'Share Tech Mono',monospace; font-size:11px;
+      color:var(--accent-blue); flex-shrink:0; padding-top:1px;
+    }
+
+    /* Severity badge */
+    .severity {
+      font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:2px;
+      padding:2px 8px; border:1px solid; flex-shrink:0; align-self:center;
+    }
+    .sev-high   { color:var(--accent-red);    border-color:rgba(239,68,68,.4);   background:rgba(239,68,68,.06);   }
+    .sev-medium { color:var(--accent-gold);   border-color:rgba(245,158,11,.4);  background:rgba(245,158,11,.06);  }
+    .sev-low    { color:var(--accent-green);  border-color:rgba(34,197,94,.4);   background:rgba(34,197,94,.06);   }
+
+    /* Resources */
+    .resource-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-bottom:60px; }
+    .resource-card {
+      background:var(--bg-panel); border:1px solid var(--border-dim);
+      padding:20px; transition:border-color .3s, transform .3s;
+    }
+    .resource-card:hover { border-color:var(--border-glow); transform:translateY(-2px); }
+    .resource-name { font-family:'Orbitron',sans-serif; font-size:13px; font-weight:700; letter-spacing:1px; color:var(--text-primary); margin-bottom:6px; }
+    .resource-desc { font-size:13px; color:var(--text-secondary); line-height:1.5; margin-bottom:12px; }
+    .resource-tag { font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px; color:var(--text-dim); }
+
+    /* No results */
+    .no-results { display:none; text-align:center; padding:60px 20px; }
+    .no-results.show { display:block; }
+    .no-results-text { font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--text-dim); letter-spacing:2px; }
+  </style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">⬡ HUNTER SYS</a>
+    <div class="nav-links">
+      <a href="index.html">HOME</a>
+      <a href="tracker.html">TRACKER</a>
+      <a href="rank.html">RANK</a>
+      <a href="troubleshooting.html" class="active">HELP</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">TROUBLE<span>SHOOTING</span></h1>
+    <p class="page-sub">// CYBERSECURITY LAB ISSUE REFERENCE DATABASE //</p>
+  </div>
+
+  <!-- Search -->
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search issues, tools, error messages..." oninput="filterIssues()" />
+  </div>
+
+  <!-- Category Filter -->
+  <div class="cat-nav">
+    <button class="cat-btn active" onclick="setCat('all',this)">ALL</button>
+    <button class="cat-btn" onclick="setCat('vm',this)">VM / SETUP</button>
+    <button class="cat-btn" onclick="setCat('network',this)">NETWORK</button>
+    <button class="cat-btn" onclick="setCat('web',this)">WEB SEC</button>
+    <button class="cat-btn" onclick="setCat('ad',this)">ACTIVE DIR</button>
+    <button class="cat-btn" onclick="setCat('forensics',this)">FORENSICS</button>
+    <button class="cat-btn" onclick="setCat('tools',this)">TOOLS</button>
+    <button class="cat-btn" onclick="setCat('site',this)">THIS SITE</button>
+  </div>
+
+  <div id="noResults" class="no-results">
+    <div class="no-results-text">NO MATCHING ISSUES FOUND</div>
+  </div>
+
+  <!-- ─────────────── VM / SETUP ─────────────── -->
+  <div class="issues-section" data-cat="vm">
+    <div class="section-header">
+      <div class="section-icon">🖥</div>
+      <h2 class="section-title">VM / <span>SETUP</span></h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="issue-card" data-cat="vm" data-keywords="vm virtualbox vmware kali slow performance">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">⚠</span>
+        <span class="issue-title">Kali Linux VM is extremely slow or laggy</span>
+        <span class="severity sev-medium">MEDIUM</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <p><strong>Common causes:</strong> Not enough RAM/CPU allocated, no 3D acceleration, host machine under load, or running on HDD instead of SSD.</p>
+        <div class="solution-step"><span class="step-num">[01]</span><span>Allocate at least <strong>4 GB RAM</strong> and <strong>2 CPU cores</strong> in VM settings.</span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>Enable <strong>VT-x / AMD-V</strong> in your BIOS and in VM settings.</span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>In VirtualBox: Settings → Display → Enable 3D Acceleration, increase Video Memory to 128 MB.</span></div>
+        <div class="solution-step"><span class="step-num">[04]</span><span>Move the VM disk (.vmdk / .vdi) to an SSD if possible.</span></div>
+        <div class="solution-step"><span class="step-num">[05]</span><span>Install guest additions: <code>sudo apt install virtualbox-guest-additions-iso</code></span></div>
+      </div>
+    </div>
+
+    <div class="issue-card" data-cat="vm" data-keywords="snapshot corrupt vm broken restore">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">⚠</span>
+        <span class="issue-title">VM won't boot after a failed snapshot restore</span>
+        <span class="severity sev-high">HIGH</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <p><strong>Prevention is key:</strong> Always take a clean snapshot before starting a lab, and another before any risky operations.</p>
+        <div class="solution-step"><span class="step-num">[01]</span><span>Try restoring to an earlier snapshot from the snapshot manager.</span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>If the VM hangs at boot: hold <strong>Shift</strong> during boot to enter GRUB, select advanced options, and boot into recovery mode.</span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>In recovery mode run: <code>fsck -y /dev/sda1</code> to check/repair the filesystem.</span></div>
+        <div class="solution-step"><span class="step-num">[04]</span><span>If all else fails, re-download a fresh Kali VM from <strong>kali.org/get-kali</strong> and restore your files from backup.</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card" data-cat="vm" data-keywords="copy paste clipboard not working virtualbox vmware">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">ℹ</span>
+        <span class="issue-title">Copy/paste between host and VM not working</span>
+        <span class="severity sev-low">LOW</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="solution-step"><span class="step-num">[01]</span><span><strong>VirtualBox:</strong> Devices → Shared Clipboard → Bidirectional. Also enable Drag and Drop.</span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>Install/reinstall Guest Additions: Devices → Insert Guest Additions CD image → run installer inside VM.</span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span><strong>VMware:</strong> VM → Settings → Options → Guest Isolation → Enable copy/paste.</span></div>
+        <div class="solution-step"><span class="step-num">[04]</span><span>Restart the VM after making changes.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── NETWORK ─────────────── -->
+  <div class="issues-section" data-cat="network">
+    <div class="section-header">
+      <div class="section-icon">🌐</div>
+      <h2 class="section-title">NETWORK <span>ISSUES</span></h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="issue-card" data-cat="network" data-keywords="nmap no route host unreachable ping fails network">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">⚠</span>
+        <span class="issue-title">Nmap returns "Host seems down" or "No route to host"</span>
+        <span class="severity sev-medium">MEDIUM</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <p><strong>This usually means</strong> the target is unreachable, firewalled, or host discovery is being blocked by ICMP filtering.</p>
+        <div class="solution-step"><span class="step-num">[01]</span><span>Add <code>-Pn</code> to skip host discovery: <code>nmap -Pn &lt;target&gt;</code></span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>Check VM network mode — for lab targets, both VMs should be on the <strong>same host-only or NAT network</strong>.</span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>Verify with ping: <code>ping &lt;target-ip&gt;</code>. If ping fails, fix routing first.</span></div>
+        <div class="solution-step"><span class="step-num">[04]</span><span>Check IP assignment: <code>ip a</code> on both machines and confirm they're in the same subnet.</span></div>
+        <div class="code-block">nmap -sn 192.168.56.0/24          # Ping sweep the subnet
+nmap -Pn -sV -p- 192.168.56.10    # Full scan ignoring ping</div>
+      </div>
+    </div>
+
+    <div class="issue-card" data-cat="network" data-keywords="wireshark no interfaces permission capture">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">⚠</span>
+        <span class="issue-title">Wireshark shows no interfaces or can't capture</span>
+        <span class="severity sev-medium">MEDIUM</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="solution-step"><span class="step-num">[01]</span><span>Run Wireshark as root (not ideal) or add your user to the <strong>wireshark</strong> group:</span></div>
+        <div class="code-block">sudo usermod -aG wireshark $USER
+sudo dpkg-reconfigure wireshark-common   # Select "Yes" when prompted
+newgrp wireshark</div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>Log out and back in for group changes to take effect.</span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>If running in a VM, ensure the network adapter is set to <strong>Promiscuous Mode: Allow All</strong> in VM settings.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── WEB SEC ─────────────── -->
+  <div class="issues-section" data-cat="web">
+    <div class="section-header">
+      <div class="section-icon">🕷</div>
+      <h2 class="section-title">WEB <span>SECURITY</span></h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="issue-card" data-cat="web" data-keywords="burp suite intercept not working proxy browser firefox">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">⚠</span>
+        <span class="issue-title">Burp Suite not intercepting traffic / browser ignoring proxy</span>
+        <span class="severity sev-medium">MEDIUM</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="solution-step"><span class="step-num">[01]</span><span>Confirm Burp proxy listener is on <strong>127.0.0.1:8080</strong> (Proxy → Options → Proxy Listeners).</span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>In Firefox: Preferences → Network Settings → Manual Proxy → HTTP Proxy: <strong>127.0.0.1</strong>, Port: <strong>8080</strong>. Check "Use for all protocols."</span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>For HTTPS: visit <strong>http://burp</strong> in the browser, download the CA cert, then import it into Firefox (Preferences → Certificates → Import).</span></div>
+        <div class="solution-step"><span class="step-num">[04]</span><span>Confirm "Intercept is on" toggle in Burp's Proxy tab.</span></div>
+        <div class="solution-step"><span class="step-num">[05]</span><span>Use <strong>FoxyProxy</strong> extension in Firefox for easier proxy toggling.</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card" data-cat="web" data-keywords="sql injection payload not working waf blocked">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">ℹ</span>
+        <span class="issue-title">SQL injection payloads not triggering / WAF blocking</span>
+        <span class="severity sev-low">LOW</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <p><strong>Techniques to bypass filtering:</strong></p>
+        <div class="code-block">' OR 1=1--              # Basic check (blocked often)
+' OR 1=1-- -           # Add trailing space/dash
+'/**/OR/**/1=1--       # Comment-based space bypass
+' OR 'a'='a            # Alternative true condition
+%27 OR 1=1--           # URL-encoded quote
+1'; WAITFOR DELAY '0:0:5'--  # Time-based blind (MSSQL)</div>
+        <div class="solution-step"><span class="step-num">[01]</span><span>Use <strong>sqlmap</strong> with tamper scripts: <code>sqlmap -u "URL" --tamper=space2comment</code></span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>Try different comment styles: <code>--</code>, <code>#</code>, <code>/**/</code></span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>Check for second-order injection (input stored, executed later).</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card" data-cat="web" data-keywords="xss cross site scripting payload filter bypass">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">ℹ</span>
+        <span class="issue-title">XSS payloads being filtered or not executing</span>
+        <span class="severity sev-low">LOW</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="code-block">&lt;script&gt;alert(1)&lt;/script&gt;          # Basic (usually filtered)
+&lt;img src=x onerror=alert(1)&gt;        # Event handler bypass
+&lt;svg onload=alert(1)&gt;               # SVG vector
+&lt;details open ontoggle=alert(1)&gt;    # Toggle event
+javascript:alert(1)                  # In href attributes
+&lt;ScRiPt&gt;alert(1)&lt;/ScRiPt&gt;         # Case variation</div>
+        <div class="solution-step"><span class="step-num">[01]</span><span>Identify the injection context first: HTML body, attribute, JS string, or URL parameter.</span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>Use <strong>XSS Hunter</strong> or <strong>Burp Collaborator</strong> to detect blind XSS.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── ACTIVE DIRECTORY ─────────────── -->
+  <div class="issues-section" data-cat="ad">
+    <div class="section-header">
+      <div class="section-icon">🏰</div>
+      <h2 class="section-title">ACTIVE <span>DIRECTORY</span></h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="issue-card" data-cat="ad" data-keywords="kerberoast failed impacket kerberoas no spns found">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">⚠</span>
+        <span class="issue-title">Kerberoasting returns no SPNs or "KDC_ERR" errors</span>
+        <span class="severity sev-medium">MEDIUM</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="solution-step"><span class="step-num">[01]</span><span>Ensure you have valid domain credentials before attempting Kerberoasting.</span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>Enumerate SPNs first: <code>GetUserSPNs.py domain/user:pass -dc-ip &lt;DC&gt;</code></span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>If clock skew error appears: sync time with DC: <code>sudo ntpdate &lt;DC-IP&gt;</code> or use <code>-no-pass -k</code> with a valid Kerberos ticket.</span></div>
+        <div class="code-block">impacket-GetUserSPNs domain.local/user:pass \
+  -dc-ip 10.10.10.10 -request \
+  -outputfile hashes.kerberoast
+
+hashcat -m 13100 hashes.kerberoast wordlist.txt</div>
+      </div>
+    </div>
+
+    <div class="issue-card" data-cat="ad" data-keywords="pass the hash psexec wmiexec access denied smb">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">⚠</span>
+        <span class="issue-title">Pass-the-Hash / psexec returns "Access Denied"</span>
+        <span class="severity sev-high">HIGH</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="solution-step"><span class="step-num">[01]</span><span>Confirm you have the <strong>correct NTLM hash format</strong>: LM:NT (e.g., <code>aad3b435b51404eeaad3b435b51404ee:&lt;nthash&gt;</code>).</span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>The target account must be a <strong>local administrator</strong> on the remote machine, not just a domain admin.</span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>Check if <strong>LocalAccountTokenFilterPolicy</strong> is restricting remote admin access.</span></div>
+        <div class="solution-step"><span class="step-num">[04]</span><span>Try alternative tools: <code>wmiexec.py</code>, <code>smbexec.py</code>, <code>evil-winrm</code>.</span></div>
+        <div class="code-block">impacket-wmiexec domain/admin@target -hashes :&lt;nthash&gt;
+evil-winrm -i target -u admin -H &lt;nthash&gt;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── FORENSICS ─────────────── -->
+  <div class="issues-section" data-cat="forensics">
+    <div class="section-header">
+      <div class="section-icon">🔍</div>
+      <h2 class="section-title">DIGITAL <span>FORENSICS</span></h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="issue-card" data-cat="forensics" data-keywords="volatility imageinfo plugin error profile">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">⚠</span>
+        <span class="issue-title">Volatility 2 "No suitable address space" or wrong profile</span>
+        <span class="severity sev-medium">MEDIUM</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="solution-step"><span class="step-num">[01]</span><span>Identify the correct profile first: <code>vol.py -f memory.raw imageinfo</code></span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>If imageinfo fails, try <code>kdbgscan</code>: <code>vol.py -f memory.raw kdbgscan</code></span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>For Volatility 3, profiles are auto-detected — prefer Vol3 for modern images:</span></div>
+        <div class="code-block">vol.py -f memory.raw windows.pslist.PsList
+vol.py -f memory.raw windows.netscan.NetScan
+vol.py -f memory.raw windows.cmdline.CmdLine</div>
+        <div class="solution-step"><span class="step-num">[04]</span><span>Ensure you're using the correct Volatility version (2 vs 3) — syntax differs significantly.</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card" data-cat="forensics" data-keywords="autopsy slow analysis import error disk image">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">ℹ</span>
+        <span class="issue-title">Autopsy running extremely slow during analysis</span>
+        <span class="severity sev-low">LOW</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="solution-step"><span class="step-num">[01]</span><span>In Autopsy Case settings, disable unnecessary ingest modules (e.g., photo analyzer, keyword search if not needed).</span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>Allocate more RAM to Autopsy: Edit → Options → Application → set JVM heap to 70% of available RAM.</span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>Store disk images on SSD, not HDD. Autopsy performance heavily depends on I/O speed.</span></div>
+        <div class="solution-step"><span class="step-num">[04]</span><span>For quick artifact extraction, consider <strong>FTK Imager</strong> or command-line tools (<code>strings</code>, <code>grep</code>) instead.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── TOOLS ─────────────── -->
+  <div class="issues-section" data-cat="tools">
+    <div class="section-header">
+      <div class="section-icon">🔧</div>
+      <h2 class="section-title">TOOL <span>ISSUES</span></h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="issue-card" data-cat="tools" data-keywords="metasploit handler not catching shell reverse shell">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">⚠</span>
+        <span class="issue-title">Metasploit multi/handler not catching reverse shell</span>
+        <span class="severity sev-high">HIGH</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="solution-step"><span class="step-num">[01]</span><span>Confirm <strong>LHOST</strong> is set to your <em>tun0</em> (VPN) IP, not localhost or a VM NAT IP.</span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>Confirm <strong>LPORT</strong> matches exactly what the payload was generated with.</span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>Ensure the handler payload type matches the exploit payload (e.g., both <code>windows/x64/meterpreter/reverse_tcp</code>).</span></div>
+        <div class="code-block">use multi/handler
+set payload windows/x64/meterpreter/reverse_tcp
+set LHOST tun0          # or your VPN IP
+set LPORT 4444
+set ExitOnSession false
+run -j                  # Run as background job</div>
+        <div class="solution-step"><span class="step-num">[04]</span><span>Test with a netcat listener first: <code>nc -lvnp 4444</code> to rule out connectivity issues.</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card" data-cat="tools" data-keywords="hashcat not cracking too slow gpu cuda wordlist">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">ℹ</span>
+        <span class="issue-title">Hashcat cracking too slow or not utilizing GPU</span>
+        <span class="severity sev-low">LOW</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="solution-step"><span class="step-num">[01]</span><span>Run hashcat on your <strong>host machine</strong> (not inside a VM) — VMs cannot access the GPU.</span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>Install CUDA (NVIDIA) or ROCm (AMD) drivers on the host.</span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>Use <code>--benchmark</code> to test speed: <code>hashcat -m 1000 --benchmark</code></span></div>
+        <div class="solution-step"><span class="step-num">[04]</span><span>Use <strong>rules</strong> with rockyou to maximize coverage:</span></div>
+        <div class="code-block">hashcat -m 1000 hash.txt rockyou.txt -r rules/best64.rule
+hashcat -m 1000 hash.txt rockyou.txt -r rules/OneRuleToRuleThemAll.rule</div>
+        <div class="solution-step"><span class="step-num">[05]</span><span>For lab hashes (CTF/HTB), try <strong>CrackStation</strong> online first — it's instant for common hashes.</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card" data-cat="tools" data-keywords="john the ripper not working unsupported hash format">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">ℹ</span>
+        <span class="issue-title">John the Ripper: "No password hashes loaded" or wrong format</span>
+        <span class="severity sev-low">LOW</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="solution-step"><span class="step-num">[01]</span><span>Identify the hash format first using <strong>hashid</strong> or <strong>hash-identifier</strong>: <code>hash-identifier &lt;hash&gt;</code></span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>Specify format explicitly: <code>john hash.txt --format=NT --wordlist=rockyou.txt</code></span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>For /etc/shadow files, use <code>unshadow</code> first: <code>unshadow passwd shadow &gt; combined.txt</code></span></div>
+        <div class="code-block">john --list=formats | grep -i ntlm    # List available formats
+john hash.txt --format=raw-md5 --wordlist=rockyou.txt
+john hash.txt --show                  # Show cracked passwords</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── THIS SITE ─────────────── -->
+  <div class="issues-section" data-cat="site">
+    <div class="section-header">
+      <div class="section-icon">⬡</div>
+      <h2 class="section-title">THIS <span>SITE</span></h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="issue-card" data-cat="site" data-keywords="github pages site not loading 404 deploy">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">⚠</span>
+        <span class="issue-title">GitHub Pages site shows 404 or won't deploy</span>
+        <span class="severity sev-high">HIGH</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="solution-step"><span class="step-num">[01]</span><span>Ensure your repo is named exactly <strong>yourusername.github.io</strong> (all lowercase).</span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>Go to Settings → Pages → confirm Source is set to <strong>Deploy from branch → main → / (root)</strong>.</span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>Check the <strong>Actions</strong> tab in GitHub for deployment errors.</span></div>
+        <div class="solution-step"><span class="step-num">[04]</span><span>Ensure <strong>index.html</strong> exists in the root of your repo (not inside a subfolder).</span></div>
+        <div class="solution-step"><span class="step-num">[05]</span><span>Wait up to 10 minutes after first deployment. Subsequent pushes update in ~30 seconds.</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card" data-cat="site" data-keywords="data lost storage localStorage cleared entries missing">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">⚠</span>
+        <span class="issue-title">My tracker data is missing or was reset</span>
+        <span class="severity sev-high">HIGH</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <p>This site uses <strong>browser localStorage</strong> to store your data. It is browser- and device-specific. Your data can be lost if:</p>
+        <div class="solution-step"><span class="step-num">[01]</span><span>You cleared browser cache/history (localStorage is wiped with "Clear site data").</span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>You're using a different browser or device — data does not sync between them.</span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>You opened the site in Private/Incognito mode (data resets each session).</span></div>
+        <p><strong>Backup tip:</strong> Open your browser's DevTools (F12) → Application → Local Storage → copy the <code>hunterEntries</code> value and save it in a text file as a backup.</p>
+      </div>
+    </div>
+
+    <div class="issue-card" data-cat="site" data-keywords="styles not loading css fonts broken layout">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">ℹ</span>
+        <span class="issue-title">Site looks broken — missing styles or fonts</span>
+        <span class="severity sev-medium">MEDIUM</span>
+        <span class="issue-arrow">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="solution-step"><span class="step-num">[01]</span><span>Ensure <strong>styles.css</strong> is in the same folder as all HTML files in your GitHub repo.</span></div>
+        <div class="solution-step"><span class="step-num">[02]</span><span>Google Fonts require an internet connection to load. The site may look different offline — this is expected.</span></div>
+        <div class="solution-step"><span class="step-num">[03]</span><span>Check the browser console (F12 → Console) for 404 errors on CSS or font files.</span></div>
+        <div class="solution-step"><span class="step-num">[04]</span><span>Confirm all 5 files are committed: <code>index.html</code>, <code>tracker.html</code>, <code>rank.html</code>, <code>troubleshooting.html</code>, <code>styles.css</code>.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── RESOURCES ─────────────── -->
+  <div class="section-header" style="margin-top:20px;">
+    <div class="section-icon">📚</div>
+    <h2 class="section-title">HUNTER <span>RESOURCES</span></h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="resource-grid">
+    <div class="resource-card">
+      <div class="resource-name">TRYHACKME</div>
+      <div class="resource-desc">Beginner-friendly guided labs with structured learning paths for all skill levels.</div>
+      <div class="resource-tag">🌐 tryhackme.com</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">HACK THE BOX</div>
+      <div class="resource-desc">Realistic machines and challenges. HTB Academy has excellent structured courses.</div>
+      <div class="resource-tag">🌐 hackthebox.com</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">PORTSWIGGER WEB ACADEMY</div>
+      <div class="resource-desc">Free, comprehensive web security training from the creators of Burp Suite.</div>
+      <div class="resource-tag">🌐 portswigger.net/web-security</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">IPPSEC (YOUTUBE)</div>
+      <div class="resource-desc">Detailed HTB machine walkthroughs. Excellent for learning methodology and tooling.</div>
+      <div class="resource-tag">🎬 youtube.com/c/ippsec</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">GTFOBINS</div>
+      <div class="resource-desc">Unix binary privilege escalation reference — essential for Linux privesc labs.</div>
+      <div class="resource-tag">🌐 gtfobins.github.io</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">LOLBAS</div>
+      <div class="resource-desc">Living off the Land Binaries for Windows privilege escalation and lateral movement.</div>
+      <div class="resource-tag">🌐 lolbas-project.github.io</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="container">
+    <p class="footer-text">[ HUNTER SYSTEM v1.0 ] — <span id="footerName">HUNTER</span> — ALL RIGHTS RESERVED</p>
+  </div>
+</footer>
+
+<script>
+// ── PARTICLES ──
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let W,H,parts=[];
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+function mkP(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2+.3,dx:(Math.random()-.5)*.25,dy:-Math.random()*.4-.08,alpha:Math.random()*.4+.1,color:Math.random()>.5?'59,130,246':'139,92,246'};}
+for(let i=0;i<80;i++)parts.push(mkP());
+(function draw(){ctx.clearRect(0,0,W,H);parts.forEach((p,i)=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(${p.color},${p.alpha})`;ctx.fill();p.x+=p.dx;p.y+=p.dy;if(p.y<-10)parts[i]={...mkP(),y:H+10};});requestAnimationFrame(draw);})();
+
+// ── ACCORDION ──
+function toggleIssue(header){
+  const card = header.parentElement;
+  card.classList.toggle('open');
+}
+
+// ── FILTERS ──
+let activeCat = 'all';
+function setCat(cat, btn){
+  activeCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filterIssues();
+}
+
+function filterIssues(){
+  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+  const cards  = document.querySelectorAll('.issue-card');
+  const sections = document.querySelectorAll('.issues-section');
+  let anyVisible = false;
+
+  sections.forEach(sec=>{
+    const secCat = sec.dataset.cat;
+    const catMatch = activeCat==='all' || secCat===activeCat;
+    sec.style.display = catMatch ? '' : 'none';
+  });
+
+  cards.forEach(card=>{
+    const cardCat = card.dataset.cat;
+    const catMatch = activeCat==='all' || cardCat===activeCat;
+    const kw = (card.dataset.keywords||'') + ' ' + (card.querySelector('.issue-title')?.textContent||'');
+    const kwMatch = !query || kw.toLowerCase().includes(query);
+    const show = catMatch && kwMatch;
+    card.classList.toggle('hidden', !show);
+    if(show) anyVisible = true;
+  });
+
+  document.getElementById('noResults').classList.toggle('show', !anyVisible && query!=='');
+}
+
+// ── NAME ──
+document.getElementById('footerName').textContent = localStorage.getItem('hunterName')||'HUNTER';
+</script>
+</body>
+</html>

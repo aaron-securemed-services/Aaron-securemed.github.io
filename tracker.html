@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hunter's System | Tracker</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .page-header {
+      padding: 48px 0 36px; border-bottom: 1px solid var(--border-dim); margin-bottom: 48px;
+    }
+    .page-title {
+      font-family: 'Orbitron', sans-serif; font-size: clamp(24px,4vw,42px);
+      font-weight: 900; letter-spacing: 2px; color: var(--text-primary);
+      text-shadow: var(--glow-blue);
+    }
+    .page-title span { color: var(--accent-blue); }
+    .page-sub {
+      font-family: 'Share Tech Mono', monospace; font-size: 11px;
+      letter-spacing: 2px; color: var(--text-dim); margin-top: 8px;
+    }
+
+    /* XP hint on rank select */
+    .xp-hint {
+      font-family: 'Share Tech Mono', monospace; font-size: 11px;
+      color: var(--accent-cyan); letter-spacing: 1px; margin-top: 4px;
+      min-height: 18px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(2,4,8,0.88);
+      z-index: 200; display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--bg-panel); border: 1px solid var(--border-glow);
+      padding: 32px; width: 100%; max-width: 640px; position: relative;
+      box-shadow: var(--glow-blue); max-height: 90vh; overflow-y: auto;
+    }
+    .modal-title {
+      font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 700;
+      letter-spacing: 2px; color: var(--accent-blue); margin-bottom: 24px;
+    }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      font-family: 'Share Tech Mono', monospace; font-size: 12px;
+      color: var(--text-dim); cursor: pointer; padding: 4px 10px;
+      border: 1px solid var(--border-dim); background: transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .modal-close:hover { color: var(--accent-red); border-color: var(--accent-red); }
+
+    /* Confirm delete */
+    .confirm-msg {
+      font-size: 15px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6;
+    }
+
+    /* Hunter name setting */
+    .settings-row {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      background: var(--bg-panel); border: 1px solid var(--border-dim);
+      padding: 16px 20px; margin-bottom: 32px;
+    }
+    .settings-row label { color: var(--text-dim); font-size: 10px; width: auto; }
+    .settings-row input { flex: 1; min-width: 180px; }
+
+    /* Card delete/edit buttons */
+    .card-actions .btn { font-size: 10px; padding: 6px 12px; }
+
+    /* Category tabs */
+    .tabs { display: flex; gap: 0; margin-bottom: 32px; border-bottom: 1px solid var(--border-dim); }
+    .tab-btn {
+      font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2px;
+      padding: 10px 24px; background: transparent; border: none; cursor: pointer;
+      color: var(--text-dim); text-transform: uppercase; border-bottom: 2px solid transparent;
+      margin-bottom: -1px; transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn:hover { color: var(--text-secondary); }
+    .tab-btn.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
+  </style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">⬡ HUNTER SYS</a>
+    <div class="nav-links">
+      <a href="index.html">HOME</a>
+      <a href="tracker.html" class="active">TRACKER</a>
+      <a href="rank.html">RANK</a>
+      <a href="troubleshooting.html">HELP</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">QUEST <span>TRACKER</span></h1>
+    <p class="page-sub">// ADD · UPDATE · MANAGE YOUR LABS &amp; PROJECTS //</p>
+  </div>
+
+  <!-- Hunter Name Setting -->
+  <div class="settings-row">
+    <label>HUNTER NAME</label>
+    <input type="text" id="hunterNameInput" placeholder="Enter your name..." style="max-width:240px;" />
+    <button class="btn btn-primary" onclick="saveName()">SAVE NAME</button>
+    <span id="nameSaved" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--accent-green);opacity:0;transition:opacity .3s;letter-spacing:1px;">✓ SAVED</span>
+  </div>
+
+  <!-- Add Entry Button -->
+  <div style="display:flex;justify-content:flex-end;margin-bottom:24px;">
+    <button class="btn btn-gold" onclick="openModal()">＋ ADD NEW ENTRY</button>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" data-filter="all"    onclick="setFilter('all',this)">ALL</button>
+    <button class="filter-btn"        data-filter="lab"     onclick="setFilter('lab',this)">LABS</button>
+    <button class="filter-btn"        data-filter="project" onclick="setFilter('project',this)">PROJECTS</button>
+    <span style="flex:1"></span>
+    <button class="filter-btn" data-status="complete" onclick="setStatusFilter('complete',this)">CLEARED</button>
+    <button class="filter-btn" data-status="progress" onclick="setStatusFilter('progress',this)">IN PROGRESS</button>
+    <button class="filter-btn" data-status="locked"   onclick="setStatusFilter('locked',this)">LOCKED</button>
+    <button class="filter-btn" data-status="all"      onclick="setStatusFilter('all',this)">ALL STATUS</button>
+  </div>
+
+  <!-- Entry Cards -->
+  <div class="cards-grid" id="entriesGrid"></div>
+</div>
+
+<!-- ── ADD/EDIT MODAL ── -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">ADD NEW ENTRY</div>
+    <button class="modal-close" onclick="closeModal()">✕ CLOSE</button>
+    <input type="hidden" id="editId" />
+
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>ENTRY NAME *</label>
+        <input type="text" id="fName" placeholder="e.g. Network Reconnaissance Lab" />
+      </div>
+      <div class="form-group">
+        <label>TYPE *</label>
+        <select id="fType">
+          <option value="lab">Lab / Dungeon Raid</option>
+          <option value="project">Project / Arsenal</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>RANK *</label>
+        <select id="fRank" onchange="updateXPHint()">
+          <option value="E">E-Rank</option>
+          <option value="D">D-Rank</option>
+          <option value="C">C-Rank</option>
+          <option value="B">B-Rank</option>
+          <option value="A">A-Rank</option>
+          <option value="S">S-Rank</option>
+        </select>
+        <div class="xp-hint" id="xpHint">Base XP: 250 (E-Rank)</div>
+      </div>
+      <div class="form-group full">
+        <label>STATUS *</label>
+        <select id="fStatus">
+          <option value="complete">Complete — 100% XP awarded</option>
+          <option value="progress">In Progress — 50% XP awarded</option>
+          <option value="locked">Locked — 0 XP awarded</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>DESCRIPTION</label>
+        <textarea id="fDesc" placeholder="Briefly describe what you did or learned..."></textarea>
+      </div>
+      <div class="form-group full">
+        <label>TAGS (comma-separated)</label>
+        <input type="text" id="fTags" placeholder="e.g. NMAP, WIRESHARK, TCP/IP" />
+      </div>
+      <div class="form-group full">
+        <label>LINK (writeup / GitHub)</label>
+        <input type="url" id="fLink" placeholder="https://..." />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-success" onclick="saveEntry()">✓ SAVE ENTRY</button>
+      <button class="btn btn-danger"  onclick="closeModal()">✕ CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DELETE CONFIRM MODAL ── -->
+<div class="modal-backdrop" id="deleteBackdrop">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-title" style="color:var(--accent-red);">CONFIRM DELETE</div>
+    <p class="confirm-msg">Are you sure you want to remove this entry? This action cannot be undone.</p>
+    <div class="form-actions">
+      <button class="btn btn-danger"  id="confirmDeleteBtn">✕ DELETE</button>
+      <button class="btn btn-primary" onclick="closeDeleteModal()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p class="footer-text">[ HUNTER SYSTEM v1.0 ] — <span id="footerName">HUNTER</span> — ALL RIGHTS RESERVED</p>
+  </div>
+</footer>
+
+<script>
+// ── PARTICLES ──
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let W, H, parts = [];
+function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+resize(); window.addEventListener('resize',resize);
+function mkP(){ return {x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2+.3,dx:(Math.random()-.5)*.25,dy:-Math.random()*.4-.08,alpha:Math.random()*.4+.1,color:Math.random()>.5?'59,130,246':'139,92,246'}; }
+for(let i=0;i<80;i++) parts.push(mkP());
+(function draw(){
+  ctx.clearRect(0,0,W,H);
+  parts.forEach((p,i)=>{ ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(${p.color},${p.alpha})`;ctx.fill();p.x+=p.dx;p.y+=p.dy;if(p.y<-10)parts[i]={...mkP(),y:H+10}; });
+  requestAnimationFrame(draw);
+})();
+
+// ── DATA ──
+const XP_BY_RANK = {E:250,D:600,C:1200,B:2500,A:5000,S:10000};
+const XP_LABELS  = {E:'250 XP (E-Rank)',D:'600 XP (D-Rank)',C:'1,200 XP (C-Rank)',B:'2,500 XP (B-Rank)',A:'5,000 XP (A-Rank)',S:'10,000 XP (S-Rank)'};
+
+let currentFilter = 'all';
+let currentStatusFilter = 'all';
+
+function getEntries(){ try{ return JSON.parse(localStorage.getItem('hunterEntries')||'[]'); }catch(e){return[];} }
+function saveEntries(arr){ localStorage.setItem('hunterEntries', JSON.stringify(arr)); }
+function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+function calcXP(entry){
+  const base = XP_BY_RANK[entry.rank]||0;
+  if(entry.status==='complete') return base;
+  if(entry.status==='progress') return Math.floor(base*.5);
+  return 0;
+}
+
+// ── NAME ──
+function loadName(){
+  const n = localStorage.getItem('hunterName')||'';
+  document.getElementById('hunterNameInput').value = n;
+  document.getElementById('footerName').textContent = n||'HUNTER';
+}
+function saveName(){
+  const val = document.getElementById('hunterNameInput').value.trim()||'HUNTER';
+  localStorage.setItem('hunterName', val);
+  document.getElementById('footerName').textContent = val;
+  const saved = document.getElementById('nameSaved');
+  saved.style.opacity='1'; setTimeout(()=>saved.style.opacity='0',2000);
+}
+
+// ── FILTERS ──
+function setFilter(f, btn){
+  currentFilter = f;
+  document.querySelectorAll('[data-filter]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderEntries();
+}
+function setStatusFilter(f, btn){
+  currentStatusFilter = f;
+  document.querySelectorAll('[data-status]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderEntries();
+}
+
+// ── MODAL ──
+let editingId = null;
+function openModal(id=null){
+  editingId = id;
+  document.getElementById('editId').value = id||'';
+  if(id){
+    const entry = getEntries().find(e=>e.id===id);
+    if(!entry) return;
+    document.getElementById('modalTitle').textContent = 'EDIT ENTRY';
+    document.getElementById('fName').value   = entry.name||'';
+    document.getElementById('fType').value   = entry.type||'lab';
+    document.getElementById('fRank').value   = entry.rank||'E';
+    document.getElementById('fStatus').value = entry.status||'complete';
+    document.getElementById('fDesc').value   = entry.description||'';
+    document.getElementById('fTags').value   = (entry.tags||[]).join(', ');
+    document.getElementById('fLink').value   = entry.link||'';
+  } else {
+    document.getElementById('modalTitle').textContent = 'ADD NEW ENTRY';
+    ['fName','fDesc','fTags','fLink'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('fType').value='lab';
+    document.getElementById('fRank').value='E';
+    document.getElementById('fStatus').value='complete';
+  }
+  updateXPHint();
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+function closeModal(){ document.getElementById('modalBackdrop').classList.remove('open'); }
+
+function updateXPHint(){
+  const r = document.getElementById('fRank').value;
+  document.getElementById('xpHint').textContent = `Base XP: ${XP_LABELS[r]}`;
+}
+
+function saveEntry(){
+  const name = document.getElementById('fName').value.trim();
+  if(!name){ alert('Please enter a name for the entry.'); return; }
+
+  const entry = {
+    id:      editingId || genId(),
+    name,
+    type:    document.getElementById('fType').value,
+    rank:    document.getElementById('fRank').value,
+    status:  document.getElementById('fStatus').value,
+    description: document.getElementById('fDesc').value.trim(),
+    tags:    document.getElementById('fTags').value.split(',').map(t=>t.trim().toUpperCase()).filter(Boolean),
+    link:    document.getElementById('fLink').value.trim(),
+    dateAdded: new Date().toISOString().slice(0,10),
+  };
+
+  let entries = getEntries();
+  if(editingId){
+    entries = entries.map(e => e.id===editingId ? entry : e);
+  } else {
+    entries.push(entry);
+  }
+  saveEntries(entries);
+  closeModal();
+  renderEntries();
+}
+
+// ── DELETE ──
+let deleteTargetId = null;
+function openDeleteModal(id){
+  deleteTargetId = id;
+  document.getElementById('deleteBackdrop').classList.add('open');
+  document.getElementById('confirmDeleteBtn').onclick = confirmDelete;
+}
+function closeDeleteModal(){ document.getElementById('deleteBackdrop').classList.remove('open'); deleteTargetId=null; }
+function confirmDelete(){
+  if(!deleteTargetId) return;
+  const entries = getEntries().filter(e=>e.id!==deleteTargetId);
+  saveEntries(entries);
+  closeDeleteModal();
+  renderEntries();
+}
+
+// ── RENDER ──
+function renderEntries(){
+  let entries = getEntries();
+
+  if(currentFilter!=='all') entries = entries.filter(e=>e.type===currentFilter);
+  if(currentStatusFilter!=='all') entries = entries.filter(e=>e.status===currentStatusFilter);
+
+  const grid = document.getElementById('entriesGrid');
+  if(entries.length===0){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-state-icon">⚠</div>
+      <div class="empty-state-text">NO ENTRIES FOUND — CLICK "ADD NEW ENTRY" TO BEGIN</div>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = entries.reverse().map(entry=>{
+    const xp = calcXP(entry);
+    const base = XP_BY_RANK[entry.rank]||0;
+    const pct = base>0 ? Math.round((xp/base)*100) : 0;
+    const statusIcon = entry.status==='complete'?'complete':entry.status==='progress'?'progress':'locked';
+    const statusLabel = entry.status==='complete'?'CLEARED':entry.status==='progress'?'IN PROGRESS':'LOCKED';
+    const tags = (entry.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+    const typeLabel = entry.type==='lab'?'⚔ LAB':'🛡 PROJECT';
+    return `
+    <div class="card fade-in">
+      <div class="card-corner"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span class="card-rank rank-${entry.rank.toLowerCase()}">${entry.rank}-RANK</span>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;">${typeLabel}</span>
+      </div>
+      <div class="card-header" style="margin-bottom:10px;">
+        <h3 class="card-title" style="margin-bottom:0;">${entry.name}</h3>
+        <span class="card-status" style="flex-shrink:0;">
+          <span class="status-dot ${statusIcon}"></span>
+          <span class="status-${statusIcon}">${statusLabel}</span>
+        </span>
+      </div>
+      <div class="mini-progress">
+        <div class="mini-track"><div class="mini-fill" style="width:${pct}%"></div></div>
+        <span class="mini-pct">${pct}%</span>
+      </div>
+      <p class="card-desc">${entry.description||'<em style="color:var(--text-dim)">No description.</em>'}</p>
+      <div class="card-tags">${tags}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+        <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent-gold);">+${xp.toLocaleString()} XP</span>
+        <div class="card-actions">
+          ${entry.link?`<a href="${entry.link}" target="_blank" class="btn btn-primary" style="font-size:10px;padding:5px 10px;">VIEW</a>`:''}
+          <button class="btn btn-primary" style="font-size:10px;padding:5px 10px;" onclick="openModal('${entry.id}')">EDIT</button>
+          <button class="btn btn-danger"  style="font-size:10px;padding:5px 10px;" onclick="openDeleteModal('${entry.id}')">DEL</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Close modals on backdrop click
+document.getElementById('modalBackdrop').addEventListener('click', e=>{ if(e.target===e.currentTarget)closeModal(); });
+document.getElementById('deleteBackdrop').addEventListener('click', e=>{ if(e.target===e.currentTarget)closeDeleteModal(); });
+
+loadName();
+renderEntries();
+</script>
+</body>
+</html>
