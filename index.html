@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aaron Lalinde | Cybersecurity Engineer</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── HERO ── */
+    .hero { position: relative; padding: 80px 0 68px; border-bottom: 1px solid var(--border); overflow: hidden; }
+    .gate-ring {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      border-radius: 50%; border: 1px solid rgba(59,130,246,0.06);
+      pointer-events: none; animation: ring 5s ease-in-out infinite;
+    }
+    .gate-ring:nth-child(1){ width:500px; height:500px; }
+    .gate-ring:nth-child(2){ width:700px; height:700px; animation-delay:-1.7s; border-color:rgba(139,92,246,.04); }
+    .gate-ring:nth-child(3){ width:900px; height:900px; animation-delay:-3.2s; border-color:rgba(59,130,246,.025); }
+    @keyframes ring { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.6} 50%{transform:translate(-50%,-50%) scale(1.03);opacity:1} }
+
+    .hero-layout { display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: start; position: relative; z-index: 2; }
+
+    .eyebrow {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 4px;
+      color: var(--cyan); text-transform: uppercase; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 12px; animation: blink 3s step-end infinite;
+    }
+    .eyebrow::before { content:''; display:block; width:28px; height:1px; background:var(--cyan); }
+
+    .hero-name {
+      font-family: var(--font-hud); font-size: clamp(36px,5.5vw,70px);
+      font-weight: 900; letter-spacing: -1.5px; line-height: 1;
+      color: var(--text); text-shadow: var(--glow-blue); margin-bottom: 12px;
+    }
+    .hero-title { font-family: var(--font-hud); font-size: clamp(14px,2vw,20px); font-weight: 700; color: var(--blue); letter-spacing: 1px; margin-bottom: 6px; }
+    .hero-tagline { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 28px; }
+    .hero-summary { font-size: 15px; line-height: 1.85; color: var(--text-soft); max-width: 620px; margin-bottom: 32px; }
+
+    /* Right column */
+    .hero-right { display: flex; flex-direction: column; gap: 16px; align-items: flex-end; min-width: 170px; }
+    .dossier-box {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px;
+      color: rgba(59,130,246,.22); text-align: right; line-height: 2.2;
+    }
+    .lang-badge {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px;
+      border: 1px solid rgba(6,182,212,.3); padding: 8px 16px;
+      color: var(--cyan); text-align: center; background: rgba(6,182,212,.04);
+    }
+    .lang-label { font-size: 9px; letter-spacing: 3px; color: var(--text-dim); display: block; margin-bottom: 4px; }
+
+    /* ── SKILLS SECTION ── */
+    .skills-showcase { display: grid; grid-template-columns: repeat(auto-fill,minmax(255px,1fr)); gap: 18px; }
+    .skill-cat-card {
+      background: var(--card); border: 1px solid var(--border);
+      padding: 20px 22px; transition: border-color .3s, box-shadow .3s; position: relative; overflow: hidden;
+    }
+    .skill-cat-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan)); opacity:0; transition:opacity .3s;
+    }
+    .skill-cat-card:hover { border-color: var(--border-lit); box-shadow: var(--glow-blue); }
+    .skill-cat-card:hover::before { opacity: 1; }
+    .skill-cat-title {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px;
+      color: var(--cyan); text-transform: uppercase;
+      margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+    }
+    .skill-pills { display: flex; flex-wrap: wrap; gap: 7px; }
+    .skill-pill {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px;
+      color: var(--text-soft); border: 1px solid var(--border);
+      padding: 4px 10px; text-transform: uppercase; transition: color .2s, border-color .2s, background .2s;
+    }
+    .skill-cat-card:hover .skill-pill { color: var(--text); border-color: rgba(59,130,246,.3); background: rgba(59,130,246,.04); }
+
+    @media(max-width:768px) {
+      .hero-layout { grid-template-columns: 1fr; }
+      .hero-right   { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo"><span class="accent">⬡</span> AL RÉSUMÉ</a>
+    <div class="nav-links">
+      <a href="index.html" class="active">OVERVIEW</a>
+      <a href="experience.html">EXPERIENCE</a>
+      <a href="portfolio.html">PORTFOLIO</a>
+    </div>
+    <a href="#contact" class="nav-cta">CONTACT ↓</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="gate-ring"></div><div class="gate-ring"></div><div class="gate-ring"></div>
+  <div class="container">
+    <div class="hero-layout">
+      <div>
+        <div class="eyebrow">CYBERSECURITY PROFESSIONAL</div>
+        <h1 class="hero-name" id="heroName">Aaron Lalinde</h1>
+        <div class="hero-title" id="heroTitle"></div>
+        <div class="hero-tagline" id="heroTagline"></div>
+        <p class="hero-summary" id="heroSummary"></p>
+        <div class="contact-row" id="contactRow"></div>
+      </div>
+      <div class="hero-right">
+        <div class="dossier-box" id="dossierBox"></div>
+        <div class="lang-badge">
+          <span class="lang-label">LANGUAGES</span>
+          <span id="langVal">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- STAT STRIP -->
+  <section style="padding-top:48px;border-bottom:none;padding-bottom:0;">
+    <div class="stat-strip" id="statStrip" style="margin-bottom:60px;"></div>
+  </section>
+
+  <!-- SKILLS SHOWCASE -->
+  <section>
+    <div class="s-head">
+      <span class="s-num">01 —</span>
+      <h2 class="s-title">Core Skills</h2>
+      <div class="s-line"></div>
+    </div>
+    <div class="skills-showcase" id="skillsGrid"></div>
+  </section>
+
+  <!-- CERTIFICATIONS STRIP -->
+  <section>
+    <div class="s-head">
+      <span class="s-num">02 —</span>
+      <h2 class="s-title">Certifications</h2>
+      <div class="s-line"></div>
+      <a href="experience.html#certs" style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--text-dim);text-decoration:none;white-space:nowrap;flex-shrink:0;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)'">ALL CERTS →</a>
+    </div>
+    <div class="cert-grid" id="certStrip"></div>
+  </section>
+
+  <!-- EXPERIENCE PREVIEW -->
+  <section>
+    <div class="s-head">
+      <span class="s-num">03 —</span>
+      <h2 class="s-title">Recent Experience</h2>
+      <div class="s-line"></div>
+      <a href="experience.html" style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--text-dim);text-decoration:none;white-space:nowrap;flex-shrink:0;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)'">FULL HISTORY →</a>
+    </div>
+    <div class="timeline" id="expPreview"></div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="s-head">
+      <span class="s-num">04 —</span>
+      <h2 class="s-title">Get In Touch</h2>
+      <div class="s-line"></div>
+    </div>
+    <p style="font-size:15px;color:var(--text-soft);line-height:1.8;max-width:520px;margin-bottom:28px;">
+      Open to new opportunities, collaborations, and consulting. Reach out through any channel below.
+    </p>
+    <div class="contact-row" id="contactBottom"></div>
+  </section>
+</div>
+
+<footer>
+  <div class="container foot-inner">
+    <span class="foot-copy"><span id="footName">Aaron Lalinde</span> · CYBERSECURITY ENGINEER</span>
+    <div class="foot-links">
+      <a href="index.html">Overview</a>
+      <a href="experience.html">Experience</a>
+      <a href="portfolio.html">Portfolio</a>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+/* PARTICLES */
+const cv=document.getElementById('particles'),cx=cv.getContext('2d');
+let W,H,pts=[];
+function rsz(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+rsz();window.addEventListener('resize',rsz);
+function mp(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.3+.3,dx:(Math.random()-.5)*.28,dy:-Math.random()*.45-.1,a:Math.random()*.45+.1,c:Math.random()>.5?'59,130,246':'139,92,246'};}
+for(let i=0;i<100;i++)pts.push(mp());
+(function d(){cx.clearRect(0,0,W,H);pts.forEach((p,i)=>{cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fillStyle=`rgba(${p.c},${p.a})`;cx.fill();p.x+=p.dx;p.y+=p.dy;if(p.y<-10)pts[i]={...mp(),y:H+10};});requestAnimationFrame(d);})();
+
+const RANK_COLORS={S:'var(--gold)',A:'var(--orange)',B:'var(--purple)',C:'var(--blue)',D:'var(--green)',E:'var(--text-soft)'};
+
+function buildContacts(){
+  const items=[];
+  if(PROFILE.email)    items.push(`<a href="mailto:${PROFILE.email}" class="contact-item"><span class="contact-icon">✉</span>${PROFILE.email}</a>`);
+  if(PROFILE.phone)    items.push(`<a href="tel:${PROFILE.phone}"    class="contact-item"><span class="contact-icon">☏</span>${PROFILE.phone}</a>`);
+  if(PROFILE.linkedin) items.push(`<a href="${PROFILE.linkedin}" target="_blank" rel="noopener" class="contact-item"><span class="contact-icon">in</span>LinkedIn</a>`);
+  if(PROFILE.github)   items.push(`<a href="${PROFILE.github}"   target="_blank" rel="noopener" class="contact-item"><span class="contact-icon">⌥</span>GitHub</a>`);
+  if(PROFILE.location) items.push(`<span class="contact-item"><span class="contact-icon">◎</span>${PROFILE.location}</span>`);
+  return items.join('');
+}
+
+function renderSkills(){
+  document.getElementById('skillsGrid').innerHTML = Object.entries(SKILLS).map(([cat,items])=>`
+    <div class="skill-cat-card fade-in">
+      <div class="skill-cat-title">${cat}</div>
+      <div class="skill-pills">${items.map(s=>`<span class="skill-pill">${s}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+function renderCerts(){
+  document.getElementById('certStrip').innerHTML = CERTIFICATIONS.map(c=>`
+    <div class="cert-card fade-in">
+      <div class="cert-badge-txt">${c.badge}</div>
+      <div class="cert-name">${c.name}</div>
+      <div class="cert-issuer">${c.issuer}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+        <span class="cert-status-badge cert-status-${c.status}">${c.status==='in-progress'?'IN PROGRESS':c.status.toUpperCase()}</span>
+        ${c.year?`<span style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);">${c.year}</span>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function renderExpPreview(){
+  document.getElementById('expPreview').innerHTML = EXPERIENCE.slice(0,2).map(e=>`
+    <div class="tl-item fade-in">
+      <div class="tl-top">
+        <span class="tl-title">${e.title}</span>
+        <span class="tl-date">${e.start} – ${e.end}</span>
+      </div>
+      <div class="tl-org">${e.company} · ${e.location} <span class="tl-type">${e.type}</span></div>
+      <ul class="tl-bullets">${e.bullets.slice(0,2).map(b=>`<li>${b}</li>`).join('')}</ul>
+      <div class="tags" style="margin-top:12px;">${(e.skills||[]).map(s=>`<span class="tag">${s}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+function renderStats(){
+  const labsDone =PORTFOLIO.filter(p=>p.type==='lab'&&p.status==='complete').length;
+  const projDone =PORTFOLIO.filter(p=>p.type==='project'&&p.status==='complete').length;
+  const certActive=CERTIFICATIONS.filter(c=>c.status==='active').length;
+  const yrsExp   = new Date().getFullYear() - 2019;
+  document.getElementById('statStrip').innerHTML=`
+    <div class="stat-cell"><span class="stat-val">${yrsExp}+</span><span class="stat-label">Years at Stryker</span></div>
+    <div class="stat-cell"><span class="stat-val">3</span><span class="stat-label">FDA 510(k) Submissions</span></div>
+    <div class="stat-cell"><span class="stat-val">${certActive}</span><span class="stat-label">Active Certs</span></div>
+    <div class="stat-cell"><span class="stat-val">${labsDone}</span><span class="stat-label">Labs Cleared</span></div>
+    <div class="stat-cell"><span class="stat-val">${projDone}</span><span class="stat-label">Projects Built</span></div>`;
+}
+
+function init(){
+  document.getElementById('heroTitle').textContent   = PROFILE.title;
+  document.getElementById('heroTagline').textContent = PROFILE.tagline;
+  document.getElementById('heroSummary').textContent = PROFILE.summary.replace(/\s+/g,' ').trim();
+  document.getElementById('langVal').textContent     = PROFILE.languages;
+  document.getElementById('dossierBox').innerHTML = `
+    DOSSIER #AL-${new Date().getFullYear()}<br>
+    CLASSIFICATION: PUBLIC<br>
+    UPDATED: ${new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'}).toUpperCase()}`;
+
+  const c=buildContacts();
+  document.getElementById('contactRow').innerHTML    = c;
+  document.getElementById('contactBottom').innerHTML = c;
+
+  renderStats();
+  renderSkills();
+  renderCerts();
+  renderExpPreview();
+}
+init();
+</script>
+</body>
+</html>

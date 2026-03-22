@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aaron Lalinde | Experience</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media(max-width:640px){ .two-col { grid-template-columns: 1fr; } }
+
+    /* Cert card left accent border by status */
+    .cert-card.active-cert   { border-left: 3px solid var(--green); }
+    .cert-card.progress-cert { border-left: 3px solid var(--gold); }
+    .cert-card.planned-cert  { border-left: 3px solid var(--border-lit); }
+
+    /* Tools cloud */
+    .tools-cloud { display: flex; flex-wrap: wrap; gap: 10px; }
+    .tool-chip {
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px;
+      color: var(--text-soft); border: 1px solid var(--border);
+      padding: 6px 14px; transition: color .2s, border-color .2s, background .2s;
+      text-transform: uppercase;
+    }
+    .tool-chip:hover { color: var(--cyan); border-color: rgba(6,182,212,.4); background: rgba(6,182,212,.04); }
+  </style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo"><span class="accent">⬡</span> AL RÉSUMÉ</a>
+    <div class="nav-links">
+      <a href="index.html">OVERVIEW</a>
+      <a href="experience.html" class="active">EXPERIENCE</a>
+      <a href="portfolio.html">PORTFOLIO</a>
+    </div>
+    <a href="index.html#contact" class="nav-cta">CONTACT ↓</a>
+  </div>
+</nav>
+
+<!-- PAGE BAND -->
+<div class="page-band">
+  <div class="container">
+    <div class="band-eyebrow">DOSSIER · SECTION 02</div>
+    <h1 class="band-title">Professional <em>Experience</em></h1>
+    <p class="band-sub">Work History · Education · Certifications · Tools</p>
+    <div class="band-dossier" id="bandDossier"></div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- WORK HISTORY -->
+  <section>
+    <div class="s-head">
+      <span class="s-num">01 —</span>
+      <h2 class="s-title">Work History</h2>
+      <div class="s-line"></div>
+    </div>
+    <div class="timeline" id="workTimeline"></div>
+  </section>
+
+  <!-- EDUCATION -->
+  <section>
+    <div class="s-head">
+      <span class="s-num">02 —</span>
+      <h2 class="s-title">Education</h2>
+      <div class="s-line"></div>
+    </div>
+    <div class="two-col" id="eduGrid"></div>
+  </section>
+
+  <!-- CERTIFICATIONS -->
+  <section id="certs">
+    <div class="s-head">
+      <span class="s-num">03 —</span>
+      <h2 class="s-title">Certifications</h2>
+      <div class="s-line"></div>
+    </div>
+    <div class="cert-grid" id="certGrid"></div>
+  </section>
+
+  <!-- TOOLS & TECHNOLOGY -->
+  <section>
+    <div class="s-head">
+      <span class="s-num">04 —</span>
+      <h2 class="s-title">Tools & Technology</h2>
+      <div class="s-line"></div>
+    </div>
+    <div class="tools-cloud" id="toolsCloud"></div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container foot-inner">
+    <span class="foot-copy"><span>Aaron Lalinde</span> · CYBERSECURITY ENGINEER</span>
+    <div class="foot-links">
+      <a href="index.html">Overview</a>
+      <a href="experience.html">Experience</a>
+      <a href="portfolio.html">Portfolio</a>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+/* PARTICLES */
+const cv=document.getElementById('particles'),cx=cv.getContext('2d');
+let W,H,pts=[];
+function rsz(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+rsz();window.addEventListener('resize',rsz);
+function mp(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.3+.3,dx:(Math.random()-.5)*.28,dy:-Math.random()*.45-.1,a:Math.random()*.45+.1,c:Math.random()>.5?'59,130,246':'139,92,246'};}
+for(let i=0;i<80;i++)pts.push(mp());
+(function d(){cx.clearRect(0,0,W,H);pts.forEach((p,i)=>{cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fillStyle=`rgba(${p.c},${p.a})`;cx.fill();p.x+=p.dx;p.y+=p.dy;if(p.y<-10)pts[i]={...mp(),y:H+10};});requestAnimationFrame(d);})();
+
+// All tools pulled from SKILLS + a hardcoded list
+const TOOLS = ["Microsoft Office Suite","onePLM","Confluence","Jama","Python","Linux","Snort","Nmap","Wireshark","Synopsys Detect"];
+
+function renderWork(){
+  document.getElementById('workTimeline').innerHTML = EXPERIENCE.map(e=>`
+    <div class="tl-item fade-in">
+      <div class="tl-top">
+        <span class="tl-title">${e.title}</span>
+        <span class="tl-date">${e.start} – ${e.end}</span>
+      </div>
+      <div class="tl-org">${e.company} · ${e.location} <span class="tl-type">${e.type}</span></div>
+      <ul class="tl-bullets">${e.bullets.map(b=>`<li>${b}</li>`).join('')}</ul>
+      <div class="tags" style="margin-top:14px;">${(e.skills||[]).map(s=>`<span class="tag">${s}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+function renderEdu(){
+  document.getElementById('eduGrid').innerHTML = EDUCATION.map(e=>`
+    <div class="edu-card fade-in">
+      <div class="edu-degree">${e.degree}</div>
+      <div class="edu-school">${e.school} · ${e.location}</div>
+      <div class="edu-meta">CLASS OF ${e.year}</div>
+      ${e.honors?`<div style="font-size:13px;font-style:italic;color:var(--gold);">⭐ ${e.honors}</div>`:''}
+      ${e.notes?`<div class="edu-notes">${e.notes}</div>`:''}
+    </div>`).join('');
+}
+
+function renderCerts(){
+  document.getElementById('certGrid').innerHTML = CERTIFICATIONS.map(c=>{
+    const cls = c.status==='active'?'active-cert':c.status==='in-progress'?'progress-cert':'planned-cert';
+    return `
+    <div class="cert-card ${cls} fade-in">
+      <div class="cert-badge-txt">${c.badge}</div>
+      <div class="cert-name">${c.name}</div>
+      <div class="cert-issuer">${c.issuer}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+        <span class="cert-status-badge cert-status-${c.status}">${c.status==='in-progress'?'IN PROGRESS':c.status.toUpperCase()}</span>
+        ${c.year?`<span style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);">${c.year}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTools(){
+  document.getElementById('toolsCloud').innerHTML = TOOLS.map(t=>`
+    <span class="tool-chip">${t}</span>`).join('');
+}
+
+document.getElementById('bandDossier').innerHTML=`
+  DOSSIER #AL-${new Date().getFullYear()}<br>
+  SECTION: EXPERIENCE<br>
+  ROLES: ${EXPERIENCE.length} &nbsp;·&nbsp; CERTS: ${CERTIFICATIONS.length}`;
+
+renderWork();
+renderEdu();
+renderCerts();
+renderTools();
+</script>
+</body>
+</html>

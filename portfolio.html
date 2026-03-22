@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aaron Lalinde | Portfolio</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── TABS ── */
+    .tabs { display:flex; border-bottom: 1px solid var(--border); margin-bottom: 0; }
+    .tab-btn {
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px;
+      padding: 11px 26px; background: transparent; border: none; cursor: pointer;
+      color: var(--text-dim); text-transform: uppercase;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color .2s, border-color .2s;
+    }
+    .tab-btn:hover { color: var(--text-soft); }
+    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+    .tab-panel { display: none; padding-top: 36px; }
+    .tab-panel.active { display: block; }
+
+    /* ── RANK PILLS ── */
+    .rank-pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .rank-pill {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--panel); border: 1px solid var(--border);
+      padding: 7px 14px; transition: border-color .2s;
+    }
+    .rank-pill:hover { border-color: var(--border-lit); }
+    .rp-rank { font-family: var(--font-hud); font-size: 14px; font-weight: 700; }
+    .rp-count { font-family: var(--font-mono); font-size: 11px; color: var(--text-soft); }
+
+    /* ── SKILLS CLOUD ── */
+    .skills-cloud-section {
+      background: var(--panel); border: 1px solid var(--border);
+      padding: 28px 32px; margin-top: 60px; position: relative;
+    }
+    .skills-cloud-section::before {
+      content: 'SKILLS DEMONSTRATED';
+      position: absolute; top: -10px; left: 20px;
+      font-family: var(--font-mono); font-size: 9px; letter-spacing: 3px;
+      color: var(--blue); background: var(--void); padding: 0 10px;
+    }
+    .cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+    .cloud-tag {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px;
+      padding: 5px 14px; border: 1px solid; cursor: default; transition: all .2s;
+      text-transform: uppercase;
+    }
+    .cloud-hi { color: var(--blue);     border-color: rgba(59,130,246,.5); background: rgba(59,130,246,.06); }
+    .cloud-md { color: var(--text-soft); border-color: var(--border-lit); }
+    .cloud-lo { color: var(--text-dim);  border-color: var(--border); }
+    .cloud-tag:hover { color: var(--cyan); border-color: rgba(6,182,212,.5); background: rgba(6,182,212,.06); }
+
+    /* ── EMPTY STATE ── */
+    .empty-panel {
+      grid-column: 1/-1; text-align: center; padding: 64px 20px;
+      border: 1px dashed var(--border);
+    }
+    .empty-panel-txt {
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo"><span class="accent">⬡</span> AL RÉSUMÉ</a>
+    <div class="nav-links">
+      <a href="index.html">OVERVIEW</a>
+      <a href="experience.html">EXPERIENCE</a>
+      <a href="portfolio.html" class="active">PORTFOLIO</a>
+    </div>
+    <a href="index.html#contact" class="nav-cta">CONTACT ↓</a>
+  </div>
+</nav>
+
+<!-- PAGE BAND -->
+<div class="page-band">
+  <div class="container">
+    <div class="band-eyebrow">DOSSIER · SECTION 03</div>
+    <h1 class="band-title">Labs & <em>Portfolio</em></h1>
+    <p class="band-sub">Hands-On Security Research · Projects · CTF Labs</p>
+    <div class="band-dossier" id="bandDossier"></div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- STAT STRIP -->
+  <div class="stat-strip" id="portStats" style="margin-bottom:52px;"></div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('all',this)">ALL</button>
+    <button class="tab-btn"        onclick="switchTab('lab',this)">⚔ LABS</button>
+    <button class="tab-btn"        onclick="switchTab('project',this)">🛡 PROJECTS</button>
+  </div>
+
+  <!-- ALL PANEL -->
+  <div class="tab-panel active" id="panel-all">
+    <div class="filter-row">
+      <button class="f-btn active" onclick="setStatus('all',this,'all')">ALL STATUS</button>
+      <button class="f-btn"        onclick="setStatus('complete',this,'all')">COMPLETE</button>
+      <button class="f-btn"        onclick="setStatus('progress',this,'all')">IN PROGRESS</button>
+    </div>
+    <div class="rank-pill-row" id="rp-all"></div>
+    <div class="port-grid" id="grid-all"></div>
+  </div>
+
+  <!-- LABS PANEL -->
+  <div class="tab-panel" id="panel-lab">
+    <div class="filter-row">
+      <button class="f-btn active" onclick="setStatus('all',this,'lab')">ALL STATUS</button>
+      <button class="f-btn"        onclick="setStatus('complete',this,'lab')">COMPLETE</button>
+      <button class="f-btn"        onclick="setStatus('progress',this,'lab')">IN PROGRESS</button>
+    </div>
+    <div class="rank-pill-row" id="rp-lab"></div>
+    <div class="port-grid" id="grid-lab"></div>
+  </div>
+
+  <!-- PROJECTS PANEL -->
+  <div class="tab-panel" id="panel-project">
+    <div class="filter-row">
+      <button class="f-btn active" onclick="setStatus('all',this,'project')">ALL STATUS</button>
+      <button class="f-btn"        onclick="setStatus('complete',this,'project')">COMPLETE</button>
+      <button class="f-btn"        onclick="setStatus('progress',this,'project')">IN PROGRESS</button>
+    </div>
+    <div class="rank-pill-row" id="rp-project"></div>
+    <div class="port-grid" id="grid-project"></div>
+  </div>
+
+  <!-- SKILLS CLOUD -->
+  <div class="skills-cloud-section">
+    <div class="cloud" id="skillCloud"></div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="container foot-inner">
+    <span class="foot-copy"><span>Aaron Lalinde</span> · CYBERSECURITY ENGINEER</span>
+    <div class="foot-links">
+      <a href="index.html">Overview</a>
+      <a href="experience.html">Experience</a>
+      <a href="portfolio.html">Portfolio</a>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+/* PARTICLES */
+const cv=document.getElementById('particles'),cx=cv.getContext('2d');
+let W,H,pts=[];
+function rsz(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+rsz();window.addEventListener('resize',rsz);
+function mp(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.3+.3,dx:(Math.random()-.5)*.28,dy:-Math.random()*.45-.1,a:Math.random()*.45+.1,c:Math.random()>.5?'59,130,246':'139,92,246'};}
+for(let i=0;i<80;i++)pts.push(mp());
+(function d(){cx.clearRect(0,0,W,H);pts.forEach((p,i)=>{cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fillStyle=`rgba(${p.c},${p.a})`;cx.fill();p.x+=p.dx;p.y+=p.dy;if(p.y<-10)pts[i]={...mp(),y:H+10};});requestAnimationFrame(d);})();
+
+const RANK_COLORS={S:'var(--gold)',A:'var(--orange)',B:'var(--purple)',C:'var(--blue)',D:'var(--green)',E:'var(--text-soft)'};
+const XP_TABLE={E:250,D:600,C:1200,B:2500,A:5000,S:10000};
+function calcXP(e){const b=XP_TABLE[e.rank]||0;if(e.status==='complete')return b;if(e.status==='progress')return Math.floor(b*.5);return 0;}
+
+/* State */
+const statusState={all:'all',lab:'all',project:'all'};
+
+function setStatus(s,btn,panel){
+  statusState[panel]=s;
+  btn.closest('.filter-row').querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrid(panel);
+}
+
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+function renderCard(entry){
+  const xp=calcXP(entry);
+  const base=XP_TABLE[entry.rank]||0;
+  const pct=base>0?Math.round((xp/base)*100):0;
+  const sk=entry.status==='complete'?'complete':entry.status==='progress'?'progress':'locked';
+  const sl=entry.status==='complete'?'CLEARED':entry.status==='progress'?'IN PROGRESS':'LOCKED';
+  const tags=(entry.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+  const dateEl=entry.date?`<div class="port-date">📅 ${entry.date}</div>`:'';
+  const link=entry.link?`<a href="${entry.link}" target="_blank" rel="noopener" style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--blue);text-decoration:none;border:1px solid rgba(59,130,246,.35);padding:6px 14px;transition:all .2s;" onmouseover="this.style.background='rgba(59,130,246,.1)'" onmouseout="this.style.background='transparent'">VIEW →</a>`:'';
+  return `
+  <div class="port-card fade-in">
+    <div class="port-card-corner"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="rank-badge rank-${entry.rank.toLowerCase()}">${entry.rank}-RANK</span>
+      <span class="status-row"><span class="dot dot-${sk}"></span><span class="col-${sk}">${sl}</span></span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+      <div class="port-name">${entry.name}</div>
+      <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--text-dim);">${entry.type==='lab'?'⚔ LAB':'🛡 PROJECT'}</span>
+    </div>
+    ${dateEl}
+    <div class="mini-prog">
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <span class="prog-pct">${pct}%</span>
+    </div>
+    <p class="port-desc">${entry.description}</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:auto;">
+      <div class="tags">${tags}</div>
+      ${link}
+    </div>
+    <div style="font-family:var(--font-mono);font-size:11px;color:var(--gold);margin-top:6px;">✦ ${xp.toLocaleString()} XP</div>
+  </div>`;
+}
+
+function renderRankPills(entries, containerId){
+  const container=document.getElementById(containerId);
+  if(!container) return;
+  container.innerHTML=['S','A','B','C','D','E'].map(r=>{
+    const total=entries.filter(e=>e.rank===r).length;
+    if(!total) return '';
+    const done=entries.filter(e=>e.rank===r&&e.status==='complete').length;
+    return `<div class="rank-pill"><span class="rp-rank" style="color:${RANK_COLORS[r]}">${r}</span><span class="rp-count">${done}/${total}</span></div>`;
+  }).join('');
+}
+
+function renderGrid(panel){
+  const type=panel==='all'?null:panel;
+  const status=statusState[panel];
+  let entries=type?PORTFOLIO.filter(e=>e.type===type):[...PORTFOLIO];
+  if(status!=='all') entries=entries.filter(e=>e.status===status);
+  const grid=document.getElementById('grid-'+panel);
+  grid.innerHTML=entries.length
+    ? entries.map(renderCard).join('')
+    : `<div class="empty-panel"><div class="empty-panel-txt">NO ENTRIES MATCH THIS FILTER</div></div>`;
+}
+
+function renderStats(){
+  const labs=PORTFOLIO.filter(p=>p.type==='lab');
+  const proj=PORTFOLIO.filter(p=>p.type==='project');
+  const totalXP=PORTFOLIO.reduce((s,e)=>s+calcXP(e),0);
+  document.getElementById('portStats').innerHTML=`
+    <div class="stat-cell"><span class="stat-val">${PORTFOLIO.length}</span><span class="stat-label">Total Entries</span></div>
+    <div class="stat-cell"><span class="stat-val">${labs.length}</span><span class="stat-label">Labs</span></div>
+    <div class="stat-cell"><span class="stat-val">${proj.length}</span><span class="stat-label">Projects</span></div>
+    <div class="stat-cell"><span class="stat-val">${PORTFOLIO.filter(e=>e.status==='complete').length}</span><span class="stat-label">Complete</span></div>
+    <div class="stat-cell"><span class="stat-val">${totalXP.toLocaleString()}</span><span class="stat-label">Total XP</span></div>`;
+}
+
+function renderCloud(){
+  const freq={};
+  PORTFOLIO.forEach(p=>(p.tags||[]).forEach(t=>freq[t]=(freq[t]||0)+1));
+  const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('skillCloud').innerHTML=sorted.map(([t,n])=>{
+    const cls=n>=3?'cloud-hi':n>=2?'cloud-md':'cloud-lo';
+    return `<span class="cloud-tag ${cls}">${t} <span style="opacity:.4;font-size:9px;">×${n}</span></span>`;
+  }).join('');
+}
+
+document.getElementById('bandDossier').innerHTML=`
+  DOSSIER #AL-${new Date().getFullYear()}<br>
+  SECTION: PORTFOLIO<br>
+  TOTAL: ${PORTFOLIO.length} ENTRIES`;
+
+renderStats();
+['all','lab','project'].forEach(p=>{
+  const src=p==='all'?PORTFOLIO:PORTFOLIO.filter(e=>e.type===p);
+  renderRankPills(src,'rp-'+p);
+  renderGrid(p);
+});
+renderCloud();
+</script>
+</body>
+</html>
