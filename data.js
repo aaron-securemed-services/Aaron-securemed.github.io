@@ -111,14 +111,14 @@ const CERTIFICATIONS = [
     name:   "CompTIA Security+",
     issuer: "CompTIA",
     year:   "Dec 2024",
-    status: "active",
+    status: "completed",
     badge:  "SEC+",
   },
   {
     name:   "Google Cybersecurity Certificate",
     issuer: "Google / Coursera",
     year:   "Dec 2024",
-    status: "active",
+    status: "completed",
     badge:  "GCC",
   },
   {
@@ -132,7 +132,7 @@ const CERTIFICATIONS = [
     name:   "HTB Certified Junior Cybersecurity Associate",
     issuer: "Hack The Box",
     year:   "",
-    status: "planned",
+    status: "in-progress",
     badge:  "HTB CJCA",
   },
 ];
