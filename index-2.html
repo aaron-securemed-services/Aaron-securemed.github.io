@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hunter's System | Home</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .gate-ring {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 600px; border-radius: 50%;
+      border: 1px solid rgba(59,130,246,0.08);
+      animation: ringPulse 4s ease-in-out infinite; pointer-events: none;
+    }
+    .gate-ring:nth-child(2) { width:800px;height:800px;animation-delay:-1.3s;border-color:rgba(139,92,246,0.05); }
+    .gate-ring:nth-child(3) { width:1000px;height:1000px;animation-delay:-2.6s;border-color:rgba(59,130,246,0.03); }
+    @keyframes ringPulse {
+      0%,100%{ transform:translate(-50%,-50%) scale(1); opacity:.6; }
+      50%    { transform:translate(-50%,-50%) scale(1.04); opacity:1; }
+    }
+    header { position:relative; padding:80px 0 60px; text-align:center; overflow:hidden; }
+    .system-alert {
+      display:inline-block; font-family:'Share Tech Mono',monospace; font-size:11px;
+      letter-spacing:3px; color:var(--accent-cyan); border:1px solid rgba(6,182,212,0.3);
+      padding:6px 20px; margin-bottom:24px; text-transform:uppercase;
+      animation:blink 2s step-end infinite;
+    }
+    h1.hero-title {
+      font-family:'Orbitron',sans-serif; font-size:clamp(32px,6vw,72px);
+      font-weight:900; line-height:1.05; letter-spacing:-1px;
+      color:var(--text-primary); text-shadow:var(--glow-blue); margin-bottom:8px;
+    }
+    h1.hero-title span {
+      background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .hero-sub {
+      font-family:'Share Tech Mono',monospace; font-size:12px;
+      color:var(--text-secondary); letter-spacing:2px; margin-bottom:40px;
+    }
+    .rank-badge {
+      display:inline-flex; align-items:center; gap:12px;
+      border:1px solid rgba(245,158,11,0.4); padding:10px 28px;
+      box-shadow:var(--glow-gold); margin-bottom:50px;
+    }
+    .rank-letter { font-family:'Orbitron',sans-serif; font-size:30px; font-weight:900; }
+    .rank-text   { font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px; opacity:.8; }
+    .quick-links { display:flex; justify-content:center; gap:16px; flex-wrap:wrap; margin-bottom:60px; }
+    .preview-section { margin-bottom:60px; }
+  </style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">⬡ HUNTER SYS</a>
+    <div class="nav-links">
+      <a href="index.html" class="active">HOME</a>
+      <a href="tracker.html">TRACKER</a>
+      <a href="rank.html">RANK</a>
+      <a href="troubleshooting.html">HELP</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="gate-ring"></div><div class="gate-ring"></div><div class="gate-ring"></div>
+  <div class="container" style="position:relative;z-index:2;">
+    <div class="system-alert">[ SYSTEM NOTIFICATION ]</div>
+    <h1 class="hero-title">HUNTER'S<br /><span>SYSTEM</span></h1>
+    <p class="hero-sub" id="heroSub">// CYBERSECURITY HUNTER PORTAL — ACTIVE //</p>
+
+    <div class="stat-grid" id="statGrid" style="max-width:700px;margin:0 auto 32px;">
+      <div class="stat-card"><span class="stat-card-value" id="statLevel">—</span><span class="stat-card-label">HUNTER LEVEL</span></div>
+      <div class="stat-card"><span class="stat-card-value" id="statLabs">0</span><span class="stat-card-label">LABS CLEARED</span></div>
+      <div class="stat-card"><span class="stat-card-value" id="statProjects">0</span><span class="stat-card-label">PROJECTS</span></div>
+      <div class="stat-card"><span class="stat-card-value" id="statXP">0</span><span class="stat-card-label">TOTAL XP</span></div>
+    </div>
+
+    <div style="display:flex;justify-content:center;">
+      <div class="rank-badge" id="rankBadge">
+        <span class="rank-letter" id="rankLetter">?</span>
+        <div>
+          <div class="rank-text" id="rankLabel">RANK</div>
+          <div class="rank-text" style="font-size:9px;opacity:0.6;">CYBERSEC HUNTER</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-links">
+      <a href="tracker.html" class="btn btn-primary">⚔ VIEW LABS &amp; PROJECTS</a>
+      <a href="rank.html"    class="btn btn-gold">★ VIEW RANK DETAILS</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="xp-section" data-label="SKILL MATRIX" style="margin-bottom:60px;">
+    <div id="skillBars"></div>
+  </div>
+
+  <section class="preview-section">
+    <div class="section-header">
+      <div class="section-icon">⚔</div>
+      <h2 class="section-title">RECENT <span>RAIDS</span></h2>
+      <div class="section-line"></div>
+      <a href="tracker.html" class="btn btn-primary" style="white-space:nowrap;font-size:10px;padding:6px 14px;">ALL LABS →</a>
+    </div>
+    <div id="labsPreview" class="cards-grid"></div>
+  </section>
+
+  <section class="preview-section">
+    <div class="section-header">
+      <div class="section-icon">🛡</div>
+      <h2 class="section-title">SHADOW <span>ARSENAL</span></h2>
+      <div class="section-line"></div>
+      <a href="tracker.html" class="btn btn-primary" style="white-space:nowrap;font-size:10px;padding:6px 14px;">ALL PROJECTS →</a>
+    </div>
+    <div id="projectsPreview" class="cards-grid"></div>
+  </section>
+</div>
+
+<footer>
+  <div class="container">
+    <p class="footer-text">[ HUNTER SYSTEM v1.0 ] — <span id="footerName">HUNTER</span> — ALL RIGHTS RESERVED</p>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+// ── PARTICLES ──
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let W, H, parts = [];
+function resize() { W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+resize(); window.addEventListener('resize',resize);
+function mkP(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+.3,dx:(Math.random()-.5)*.3,dy:-Math.random()*.5-.1,alpha:Math.random()*.5+.1,color:Math.random()>.5?'59,130,246':'139,92,246'};}
+for(let i=0;i<100;i++) parts.push(mkP());
+(function draw(){ctx.clearRect(0,0,W,H);parts.forEach((p,i)=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(${p.color},${p.alpha})`;ctx.fill();p.x+=p.dx;p.y+=p.dy;if(p.y<-10)parts[i]={...mkP(),y:H+10};});requestAnimationFrame(draw);})();
+
+const RANK_COLORS     = {S:'var(--accent-gold)',A:'var(--accent-orange)',B:'var(--accent-purple)',C:'var(--accent-blue)',D:'var(--accent-green)',E:'var(--text-secondary)'};
+const RANK_COLORS_RAW = {S:'245,158,11',A:'249,115,22',B:'139,92,246',C:'59,130,246',D:'34,197,94',E:'139,163,196'};
+
+function calcXP(e){const b=XP_TABLE[e.rank]||0;if(e.status==='complete')return b;if(e.status==='progress')return Math.floor(b*.5);return 0;}
+function getHunterRank(xp){return RANK_THRESHOLDS.find(t=>xp>=t.min)||RANK_THRESHOLDS[RANK_THRESHOLDS.length-1];}
+
+function renderCard(entry){
+  const xp=calcXP(entry),base=XP_TABLE[entry.rank]||0,pct=base>0?Math.round((xp/base)*100):0;
+  const sk=entry.status==='complete'?'complete':entry.status==='progress'?'progress':'locked';
+  const sl=entry.status==='complete'?'CLEARED':entry.status==='progress'?'IN PROGRESS':'LOCKED';
+  const tags=(entry.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+  const link=entry.link?`<div style="margin-top:12px;"><a href="${entry.link}" target="_blank" class="btn btn-primary" style="font-size:10px;padding:7px 14px;">VIEW →</a></div>`:'';
+  return `<div class="card fade-in"><div class="card-corner"></div>
+    <div class="card-header"><span class="card-rank rank-${entry.rank.toLowerCase()}">${entry.rank}-RANK</span>
+    <span class="card-status"><span class="status-dot ${sk}"></span><span class="status-${sk}">${sl}</span></span></div>
+    <h3 class="card-title">${entry.name}</h3>
+    <div class="mini-progress"><div class="mini-track"><div class="mini-fill" style="width:${pct}%"></div></div><span class="mini-pct">${pct}%</span></div>
+    <p class="card-desc">${entry.description||''}</p><div class="card-tags">${tags}</div>${link}</div>`;
+}
+
+function buildSkillBars(){
+  const cats={
+    'NETWORK':   ['NMAP','WIRESHARK','TCP/IP','PFSENSE','RECON','NETWORK'],
+    'WEB SEC':   ['BURP SUITE','XSS','SQL INJECTION','OWASP','WEB'],
+    'ACTIVE DIR':['ACTIVE DIRECTORY','KERBEROS','MIMIKATZ'],
+    'FORENSICS': ['AUTOPSY','VOLATILITY','LOG ANALYSIS','DFIR'],
+    'MALWARE':   ['GHIDRA','SANDBOX','REVERSE ENGINEERING','RE'],
+  };
+  const colors=['','purple','green','gold','red'];
+  const bar=document.getElementById('skillBars');
+  bar.innerHTML='';
+  let hasAny=false;
+  Object.entries(cats).forEach(([cat,kw],ci)=>{
+    const all=ENTRIES.filter(e=>kw.some(k=>(e.tags||[]).map(t=>t.toUpperCase()).includes(k)||(e.name||'').toUpperCase().includes(k)));
+    const done=all.filter(e=>e.status==='complete');
+    if(!all.length) return;
+    hasAny=true;
+    const pct=Math.round((done.length/all.length)*100);
+    const row=document.createElement('div');
+    row.className='xp-row';
+    row.innerHTML=`<span class="xp-label">${cat}</span><div class="xp-track"><div class="xp-fill ${colors[ci]}" style="width:0%" data-target="${pct}%"></div></div><span class="xp-pct">${pct}%</span>`;
+    bar.appendChild(row);
+  });
+  if(!hasAny) bar.innerHTML=`<div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:2px;text-align:center;padding:16px 0;">ADD ENTRIES WITH TAGS TO SEE SKILL BREAKDOWN</div>`;
+  setTimeout(()=>document.querySelectorAll('.xp-fill[data-target]').forEach(el=>el.style.width=el.dataset.target),300);
+}
+
+function init(){
+  const totalXP=ENTRIES.reduce((s,e)=>s+calcXP(e),0);
+  const labs=ENTRIES.filter(e=>e.type==='lab');
+  const projects=ENTRIES.filter(e=>e.type==='project');
+  const rank=getHunterRank(totalXP);
+
+  document.getElementById('statLevel').textContent=Math.max(1,Math.floor(totalXP/300));
+  document.getElementById('statLabs').textContent=String(labs.filter(e=>e.status==='complete').length).padStart(2,'0');
+  document.getElementById('statProjects').textContent=String(projects.length).padStart(2,'0');
+  document.getElementById('statXP').textContent=totalXP.toLocaleString();
+
+  const cr=RANK_COLORS_RAW[rank.rank];
+  const rb=document.getElementById('rankBadge');
+  rb.style.borderColor=`rgba(${cr},.4)`;
+  rb.style.background=`linear-gradient(135deg,rgba(${cr},.12),rgba(${cr},.04))`;
+  rb.style.boxShadow=`0 0 20px rgba(${cr},.5),0 0 60px rgba(${cr},.2)`;
+  document.getElementById('rankLetter').style.color=RANK_COLORS[rank.rank];
+  document.getElementById('rankLetter').textContent=rank.rank;
+  document.getElementById('rankLabel').style.color=RANK_COLORS[rank.rank];
+
+  buildSkillBars();
+
+  const recentLabs=[...labs].reverse().slice(0,3);
+  document.getElementById('labsPreview').innerHTML=recentLabs.length
+    ? recentLabs.map(renderCard).join('')
+    : `<div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text-dim);padding:40px;text-align:center;border:1px dashed var(--border-dim);grid-column:1/-1;">NO LABS YET — ADD ENTRIES TO data.js</div>`;
+
+  const recentProj=[...projects].reverse().slice(0,3);
+  document.getElementById('projectsPreview').innerHTML=recentProj.length
+    ? recentProj.map(renderCard).join('')
+    : `<div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text-dim);padding:40px;text-align:center;border:1px dashed var(--border-dim);grid-column:1/-1;">NO PROJECTS YET — ADD ENTRIES TO data.js</div>`;
+
+  document.getElementById('footerName').textContent=HUNTER_NAME;
+  document.getElementById('heroSub').textContent=`// ${HUNTER_TITLE} — ACTIVE //`;
+}
+
+init();
+</script>
+</body>
+</html>

@@ -564,6 +564,7 @@ john hash.txt --show                  # Show cracked passwords</div>
   </div>
 </footer>
 
+<script src="data.js"></script>
 <script>
 // ── PARTICLES ──
 const canvas = document.getElementById('particles');
@@ -616,7 +617,7 @@ function filterIssues(){
 }
 
 // ── NAME ──
-document.getElementById('footerName').textContent = localStorage.getItem('hunterName')||'HUNTER';
+document.getElementById('footerName').textContent = (typeof HUNTER_NAME !== 'undefined') ? HUNTER_NAME : 'HUNTER';
 </script>
 </body>
 </html>

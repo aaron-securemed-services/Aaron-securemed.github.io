@@ -239,6 +239,7 @@
   </div>
 </footer>
 
+<script src="data.js"></script>
 <script>
 // ── PARTICLES ──
 const canvas = document.getElementById('particles');
@@ -263,15 +264,15 @@ const RANKS = [
 const XP_BY_RANK = {E:250,D:600,C:1200,B:2500,A:5000,S:10000};
 const RANK_COLORS_RAW = {S:'245,158,11',A:'249,115,22',B:'139,92,246',C:'59,130,246',D:'34,197,94',E:'139,163,196'};
 
-function getEntries(){ try{return JSON.parse(localStorage.getItem('hunterEntries')||'[]');}catch(e){return[];} }
+// Data loaded from data.js
 function calcXP(e){ const b=XP_BY_RANK[e.rank]||0; if(e.status==='complete')return b; if(e.status==='progress')return Math.floor(b*.5); return 0; }
 function getRankInfo(xp){ return RANKS.find(r=>xp>=r.min)||RANKS[RANKS.length-1]; }
 
 function init(){
-  const entries = getEntries();
+  const entries = ENTRIES;
   const totalXP = entries.reduce((s,e)=>s+calcXP(e),0);
   const rankInfo = getRankInfo(totalXP);
-  const name = localStorage.getItem('hunterName')||'HUNTER';
+  const name = HUNTER_NAME;
   document.getElementById('footerName').textContent = name;
 
   // Big rank display
